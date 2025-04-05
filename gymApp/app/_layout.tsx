@@ -6,7 +6,7 @@ export default function Layout() {
   return (
     <>
       <Stack />
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Toast />
     </>
   );
