@@ -1,172 +1,221 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
-import CalendarPicker from "react-native-calendar-picker";
+import { View, Text, StyleSheet, FlatList } from "react-native";
+import moment from "moment";
+import { useEffect } from "react";
+import Api from "@/services/Api";
+import getLocalImage from "./utils/getImages";
+import ActivityCard from "@/components/ActivityCard";
+import ReservaModal from "@/components/ReservaModal";
+import { Activity, DiaSemana, Turn } from "./types/types";
 
-type DiaSemana = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
-
-interface Turno {
-  dia: DiaSemana;
-  hora: string;
-  cupoMaximo: number;
-}
-
-interface Actividad {
-  nombre: string;
-  descripcion: string;
-  turnos: Turno[];
-}
-
-const activities: Actividad[] = [
-  {
-    nombre: "Crossfit",
-    descripcion: "Entrenamiento funcional de alta intensidad.",
-    turnos: [
-      { dia: "Monday", hora: "07:00 - 08:00", cupoMaximo: 20 },
-      { dia: "Wednesday", hora: "18:00 - 19:00", cupoMaximo: 15 },
-    ],
-  },
-  {
-    nombre: "Funcional",
-    descripcion: "Ejercicios funcionales para todo el cuerpo.",
-    turnos: [
-      { dia: "Tuesday", hora: "09:00 - 10:00", cupoMaximo: 10 },
-      { dia: "Thursday", hora: "17:00 - 18:00", cupoMaximo: 12 },
-    ],
-  },
-  {
-    nombre: "Yoga",
-    descripcion: "Yoga para estiramientos y relajacion",
-    turnos: [
-      { dia: "Friday", hora: "09:00 - 10:00", cupoMaximo: 10 },
-      { dia: "Saturday", hora: "10:00 - 11:00", cupoMaximo: 10 },
-    ],
-  },
-  {
-    nombre: "Zumba",
-    descripcion: "Ejercicio aerobico mezclado con danza",
-    turnos: [
-      { dia: "Tuesday", hora: "18:00 - 19:00", cupoMaximo: 20 },
-      { dia: "Thursday", hora: "18:00 - 19:00", cupoMaximo: 20 },
-    ],
-  },
-];
+const userId = 123;
 
 export default function ActivitiesScreen() {
-  const [selectedActivity, setSelectedActivity] = useState<Actividad | null>(null);
-  const [selectedDate, setSelectedDate] = useState<DiaSemana | "">("");
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [fijados, setFijados] = useState<DiaSemana[]>([]);
+  const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [turns, setTurns] = useState<Turn[]>([]);
 
-  const handleActivitySelect = (activity: Actividad) => {
+  const getTurnosByActivity = (activityName: string) => {
+    return turns.filter(turn => turn.activityName === activityName);
+  };
+  
+  const diasSemana: DiaSemana[] = [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+  ];
+
+  useEffect(() => {
+    Api.getActivities()
+      .then((response) => {
+        const ActivityesConImagen: Activity[] = response.data.map((Activity: any) => ({
+          id: Activity.id,
+          nombre: Activity.name,
+          descripcion: Activity.description,
+          imagen: getLocalImage(Activity.name),
+        }));
+        
+        setActivities(ActivityesConImagen);
+      })
+      .catch((error) => {
+        console.error("Error al traer Activityes:", error);
+      });
+  }, []);
+
+  const toggleDia = (dia: DiaSemana) => {
+    const estaFijado = fijados.includes(dia);
+    const nuevaLista = estaFijado
+      ? fijados.filter(d => d !== dia)
+      : [...fijados, dia];
+  
+    const turnosActivity = getTurnosByActivity(selectedActivity?.nombre || "");
+  
+    const nuevasFechas: string[] = turnosActivity
+      .filter(turn => {
+        const diaTurno = moment(turn.datetime).format("dddd") as DiaSemana;
+        return diaTurno === dia;
+      })
+      .map(turn => moment(turn.datetime).format("YYYY-MM-DD"))
+      .filter(dateStr => {
+        if (!estaFijado && !selectedDates.includes(dateStr)) {
+          return true;
+        }
+        if (estaFijado && selectedDates.includes(dateStr)) {
+          return true;
+        }
+        return false;
+      });
+  
+    setFijados(nuevaLista);
+    setSelectedDates((prev) => {
+      if (!estaFijado) {
+        return [...prev, ...nuevasFechas];
+      } else {
+        return prev.filter(d => !nuevasFechas.includes(d));
+      }
+    });
+  };
+  
+
+  const getActivityDays = () => {
+    if (!selectedActivity) return [];
+  
+    const turnosActivity = getTurnosByActivity(selectedActivity.nombre);
+  
+    // Creamos estilos solo para las fechas reales con turnos
+    return turnosActivity.map(turno => {
+      const fecha = moment(turno.datetime).format("YYYY-MM-DD");
+      return {
+        date: moment(fecha).toDate(),
+        style: {
+          backgroundColor: "#FF9833", // naranja
+        },
+        textStyle: { color: "#000" },
+      };
+    });
+  };
+  
+  const getCustomDatesStyles = () => {
+    const activityDays = getActivityDays();
+    const selectedStyles = selectedDates.map(dateStr => ({
+      date: moment(dateStr).toDate(),
+      style: {
+        backgroundColor: "#FFC90E", // amarillo seleccionado
+      },
+      textStyle: { color: "#000" },
+    }));
+    // Si un día está en selectedDates, lo dejamos en amarillo
+    const filteredActivityDays = activityDays.filter(ad => {
+      return !selectedDates.some(sd => moment(sd).isSame(ad.date, "day"));
+    });
+    return [...filteredActivityDays, ...selectedStyles];
+  };
+
+  const handleActivitySelect = async (activity: Activity) => {
     setSelectedActivity(activity);
+    try {
+      const response = await Api.getTurn(activity.id); // <- asumimos que `Activity` tiene `.id`
+      const turnosFormateados: Turn[] = response.data.map((turno: any) => ({
+        id: turno.id,
+        datetime: turno.datetime,
+        capacity: turno.capacity,
+        enrolled: turno.enrolled,
+        activityName: turno.activity.name
+      }));
+      setTurns(turnosFormateados);
+    } catch (error) {
+      console.error("Error al traer turnos:", error);
+    }
     setModalVisible(true);
   };
+  
 
-  // Convertir la fecha seleccionada en un día de la semana
+  const diasHabilitados: DiaSemana[] = selectedActivity
+  ? Array.from(new Set(
+      getTurnosByActivity(selectedActivity.nombre)
+        .map(t => moment(t.datetime).format("dddd") as DiaSemana)
+    ))
+  : [];
+
   const handleDateChange = (date: Date) => {
-    const dayMapping: { [key: string]: DiaSemana } = {
-      Sun: "Sunday",
-      Mon: "Monday",
-      Tue: "Tuesday",
-      Wed: "Wednesday",
-      Thu: "Thursday",
-      Fri: "Friday",
-      Sat: "Saturday",
-    };
-    const dayCode = date.toString().split(" ")[0];
-    setSelectedDate(dayMapping[dayCode] || "");
+    const dateStr = moment(date).format("YYYY-MM-DD"); // formateás la fecha
+    handleDateClick(dateStr); // usamos el handler que agrega o saca de la lista
+  };
+    
+  const handleDateClick = (date: string) => {
+    if (selectedDates.includes(date)) {
+      // Si ya está seleccionada, la quitamos
+      setSelectedDates(prev => prev.filter(d => d !== date));
+    } else {
+      // Si no está, la agregamos
+      setSelectedDates(prev => [...prev, date]);
+    }
   };
 
+  const handleConfirmPress = () => {
+    const selectedTurnIds = turns
+      .filter(turn => {
+        const fecha = moment(turn.datetime).format("YYYY-MM-DD");
+        return selectedDates.includes(fecha) && turn.activityName === selectedActivity?.nombre;
+      })
+      .map(turn => turn.id);
+
+    const dataToSend = {
+      user_id: userId,
+      turn_ids: selectedTurnIds
+    };
+    alert("Se simularía el envío de: " + JSON.stringify(dataToSend));
+  };
+  
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Selecciona una actividad</Text>
-      <View style={styles.activitiesContainer}>
-        {activities.map((activity) => (
-          <TouchableOpacity
-            key={activity.nombre}
-            style={styles.activityButton}
-            onPress={() => handleActivitySelect(activity)}
-          >
-            <Text style={styles.buttonText}>{activity.nombre}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Modal visible={modalVisible} animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>{selectedActivity?.nombre}</Text>
-          <Text>{selectedActivity?.descripcion}</Text>
-          <CalendarPicker onDateChange={handleDateChange} />
-
-          {selectedActivity && selectedDate && (
-            <View>
-              {selectedActivity.turnos
-                .filter((turno) => turno.dia === selectedDate)
-                .map((turno, index) => (
-                  <Text key={index}>{turno.hora} (Cupo: {turno.cupoMaximo})</Text>
-                ))}
-            </View>
+      <View style={styles.container}>
+        <Text style={styles.title}>Selecciona una Actividad</Text>
+        <FlatList
+          data={activities}
+          keyExtractor={(item) => item.nombre}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          renderItem={({ item }) => (
+            <ActivityCard item={item} onPress={handleActivitySelect} />
           )}
-
-          <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-            <Text style={styles.buttonText}>Cerrar</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    </View>
+        />
+        <ReservaModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          selectedActivity={selectedActivity}
+          selectedDates={selectedDates}
+          selectedHorario={selectedHorario}
+          setSelectedHorario={setSelectedHorario}
+          handleDateChange={handleDateChange}
+          getCustomDatesStyles={getCustomDatesStyles}
+          diasSemana={diasSemana}
+          diasHabilitados={diasHabilitados}
+          fijados={fijados}
+          toggleDia={toggleDia}
+          handleConfirmPress={handleConfirmPress}
+          getTurnosByActivity={getTurnosByActivity}
+        />
+      </View>
   );
 }
+
 const styles = StyleSheet.create({
-  container: { 
-    padding: 20, 
-    backgroundColor: "#000000",
+  container: {
+    paddingTop: 40,
+    backgroundColor: "#1a1a1a",
     flex: 1,
-    justifyContent: "center", 
-    alignItems: "center"
+    justifyContent: "center",
+    alignItems:"center"
   },
-  title: { 
-    fontSize: 28, 
-    fontWeight: "700", 
+  title: {
+    marginTop: 20,
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 20,
-    color: "#D3D3D3",
-    textAlign: "center"
+    color: "#F8CC2B",
+    textAlign: "center",
   },
-  activitiesContainer: { 
-    flexDirection: "row", 
-    flexWrap: "wrap", 
-    justifyContent: "center", 
-    gap: 15 
-  },
-  activityButton: { 
-    backgroundColor: "#6A0DAD",
-    paddingVertical: 15, 
-    paddingHorizontal: 30, 
-    borderRadius: 10, 
-    minWidth: "45%",
-    alignItems: "center"
-  },
-  buttonText: { 
-    color: "#ffffff",
-    textAlign: "center", 
-    fontSize: 18, 
-    fontWeight: "600"
-  },
-  modalContainer: { 
-    flex: 1, 
-    padding: 20, 
-    justifyContent: "center", 
-    alignItems: "center",
-    backgroundColor: "#D3D3D3"
-  },
-  modalTitle: { 
-    fontSize: 24, 
-    fontWeight: "bold", 
-    marginBottom: 10, 
-    color: "#D3D3D3"
-  },
-  closeButton: { 
-    marginTop: 20, 
-    backgroundColor: "#6A0DAD",
-    padding: 12, 
-    borderRadius: 8 
-  }
 });
