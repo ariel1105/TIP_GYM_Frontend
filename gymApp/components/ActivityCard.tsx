@@ -1,4 +1,4 @@
-import { ActivityCardProps } from "@/app/types/types";
+import { ActivityCardProps } from "@/types/types";
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 

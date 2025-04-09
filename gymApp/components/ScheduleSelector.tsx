@@ -1,4 +1,4 @@
-import { ScheduleSelectorProps } from "@/app/types/types";
+import { ScheduleSelectorProps } from "@/types/types";
 import moment from "moment";
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";

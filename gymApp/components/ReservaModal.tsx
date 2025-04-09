@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet} from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import ScheduleSelector from "./ScheduleSelector";
 import CheckboxDias from "./CheckboxDias";
-import { ReservaModalProps } from "@/app/types/types";
+import { ReservaModalProps } from "@/types/types";
   
 const ReservaModal: React.FC<ReservaModalProps> = ({
   visible,

@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, FlatList } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
 import Api from "@/services/Api";
-import getLocalImage from "./utils/getImages";
+import getLocalImage from "../utils/getImages";
 import ActivityCard from "@/components/ActivityCard";
 import ReservaModal from "@/components/ReservaModal";
-import { Activity, DiaSemana, Turn } from "./types/types";
+import { Activity, DiaSemana, Turn } from "../../types/types";
 
 const userId = 123;
 

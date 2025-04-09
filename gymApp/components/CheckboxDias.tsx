@@ -1,4 +1,4 @@
-import { CheckboxDiasProps } from "@/app/types/types";
+import { CheckboxDiasProps } from "@/types/types";
 import { View, Text, TouchableOpacity, StyleSheet} from "react-native";
 
 const CheckboxDias: React.FC<CheckboxDiasProps> = ({ diasSemana, diasHabilitados, fijados, toggleDia }) => (
