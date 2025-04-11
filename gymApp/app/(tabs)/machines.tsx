@@ -1,5 +1,6 @@
+import colors from "@/theme/colors";
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function Machines() {
@@ -16,57 +17,66 @@ export default function Machines() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Espacio de máquinas</Text>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.optionButton} onPress={() => handleSelect("Pack x2 días")}>
-          <Text style={styles.buttonText}>Pack x2 días</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.optionButton} onPress={() => handleSelect("Pack x3 días")}>
-          <Text style={styles.buttonText}>Pack x3 días</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.optionButton} onPress={() => handleSelect("Pack Libre")}>
-          <Text style={styles.buttonText}>Libre</Text>
-        </TouchableOpacity>
+    <ImageBackground source={require("../../assets/images/machines.jpg")} 
+      style={styles.background} 
+      resizeMode="cover">
+      <View style={styles.overlay}>
+        <Text style={styles.title}>Espacio de máquinas</Text>
+  
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.optionButton} onPress={() => handleSelect("Pack x2 días")}>
+            <Text style={styles.buttonText}>Pack x2 días</Text>
+          </TouchableOpacity>
+  
+          <TouchableOpacity style={styles.optionButton} onPress={() => handleSelect("Pack x3 días")}>
+            <Text style={styles.buttonText}>Pack x3 días</Text>
+          </TouchableOpacity>
+  
+          <TouchableOpacity style={styles.optionButton} onPress={() => handleSelect("Pack Libre")}>
+            <Text style={styles.buttonText}>Libre</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#000", 
-    alignItems: "center", 
-    justifyContent: "center", 
-    padding: 20 
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
   },
-  title: { 
-    fontSize: 28, 
-    fontWeight: "700", 
-    color: "#D3D3D3", 
+  overlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: colors.white,
     marginBottom: 30,
-    textAlign: "center" 
+    textAlign: "center",
   },
   buttonContainer: {
     gap: 20,
     width: "100%",
-    alignItems: "center"
+    alignItems: "center",
   },
   optionButton: {
-    backgroundColor: "#6A0DAD",
+    backgroundColor: colors.primary,
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 10,
     width: "80%",
-    alignItems: "center"
+    alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
+    color: colors.black,
     fontSize: 18,
-    fontWeight: "600"
-  }
+    fontWeight: "600",
+  },
 });

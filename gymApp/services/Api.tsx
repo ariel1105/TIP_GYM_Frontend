@@ -31,9 +31,14 @@ const getTurn = (activity_id: number) => {
     return get(`${API_BASE_URL}turns/${activity_id}`)
 }
 
+const getRegistrations = (member_id: number) => {
+    return get(`${API_BASE_URL}member/registrations/${member_id}`)
+}
+
 const Api = {
     getActivities,
     getTurn,
+    getRegistrations
 }
 
 export default Api;

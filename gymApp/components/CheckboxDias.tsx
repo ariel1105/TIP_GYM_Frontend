@@ -1,5 +1,6 @@
 import { CheckboxDiasProps } from "@/types/types";
 import { View, Text, TouchableOpacity, StyleSheet} from "react-native";
+import colors from "@/theme/colors";
 
 const CheckboxDias: React.FC<CheckboxDiasProps> = ({ diasSemana, diasHabilitados, fijados, toggleDia }) => (
     <View style={styles.checkboxContainer}>
@@ -31,7 +32,6 @@ const CheckboxDias: React.FC<CheckboxDiasProps> = ({ diasSemana, diasHabilitados
   );
 
 export default CheckboxDias
-
 const styles = StyleSheet.create({
   checkboxContainer: {
     flexDirection: "row",
@@ -40,24 +40,24 @@ const styles = StyleSheet.create({
   },
   checkboxButton: {
     padding: 10,
-    backgroundColor: "black",
+    backgroundColor: colors.black,
     borderRadius: 6,
   },
   checkboxSelected: {
-    backgroundColor: "#FFC90E",
+    backgroundColor: colors.primary,
   },
   checkboxText: {
-    color: "white", 
+    color: colors.white,
     fontWeight: "bold",
   },
   checkboxTextSelected: {
-    color: "black",
+    color: colors.onPrimary,
   },
   checkboxDisabled: {
-    backgroundColor: "#333",
+    backgroundColor: colors.grayDark,
     opacity: 0.3,
   },
   checkboxTextDisabled: {
-    color: "#5E5E5E",
+    color: colors.grayMedium,
   },
 });

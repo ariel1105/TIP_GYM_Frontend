@@ -9,11 +9,17 @@ export interface Activity {
 
 export interface Turn {
   id: number;
-  datetime: string; // en formato ISO, ej. "2025-04-01T09:00:00"
+  datetime: string;
   capacity: number;
   enrolled: number;
   activityName: string;
 }
+
+export interface Registration {
+  activityName: string;
+  startTime: string; 
+}
+
 
 export interface ActivityCardProps {
     item: Activity;
@@ -27,11 +33,11 @@ export interface CheckboxDiasProps {
   toggleDia: (dia: DiaSemana) => void; 
 }
 
-export interface ReservaModalProps {
+export interface ReservationModalProps {
     visible: boolean;
     onClose: () => void;
     selectedActivity: Activity | null;
-    selectedDates: string[]; // formato "YYYY-MM-DD"
+    selectedDates: string[];
     selectedHorario: string | null;
     setSelectedHorario: (horario: string | null) => void;
     handleDateChange: (date: Date) => void;
@@ -50,8 +56,14 @@ export interface ReservaModalProps {
 
 export interface ScheduleSelectorProps {
     selectedActivity: Activity;
-    selectedDates: string[]; // Formato "YYYY-MM-DD"
+    selectedDates: string[];
     selectedHorario: string | null;
     setSelectedHorario: (hora: string) => void;
     getTurnosByActivity: (activityName: string) => Turn[];
+}
+
+export interface ConfirmationModalProps {
+  visible: boolean;
+  onClose: () => void;
+  mensaje?: string;
 }

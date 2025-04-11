@@ -5,8 +5,10 @@ import { useEffect } from "react";
 import Api from "@/services/Api";
 import getLocalImage from "../utils/getImages";
 import ActivityCard from "@/components/ActivityCard";
-import ReservaModal from "@/components/ReservaModal";
+import ReservationModal from "@/components/ReservationModal";
 import { Activity, DiaSemana, Turn } from "../../types/types";
+import colors from "@/theme/colors";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 const userId = 123;
 
@@ -18,6 +20,8 @@ export default function ActivitiesScreen() {
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+
 
   const getTurnosByActivity = (activityName: string) => {
     return turns.filter(turn => turn.activityName === activityName);
@@ -84,15 +88,14 @@ export default function ActivitiesScreen() {
   
     const turnosActivity = getTurnosByActivity(selectedActivity.nombre);
   
-    // Creamos estilos solo para las fechas reales con turnos
     return turnosActivity.map(turno => {
       const fecha = moment(turno.datetime).format("YYYY-MM-DD");
       return {
         date: moment(fecha).toDate(),
         style: {
-          backgroundColor: "#FF9833", // naranja
+          backgroundColor: colors.secondary
         },
-        textStyle: { color: "#000" },
+        textStyle: { color: colors.black },
       };
     });
   };
@@ -102,11 +105,10 @@ export default function ActivitiesScreen() {
     const selectedStyles = selectedDates.map(dateStr => ({
       date: moment(dateStr).toDate(),
       style: {
-        backgroundColor: "#FFC90E", // amarillo seleccionado
+        backgroundColor: colors.primary
       },
-      textStyle: { color: "#000" },
+      textStyle: { color: colors.black },
     }));
-    // Si un día está en selectedDates, lo dejamos en amarillo
     const filteredActivityDays = activityDays.filter(ad => {
       return !selectedDates.some(sd => moment(sd).isSame(ad.date, "day"));
     });
@@ -116,7 +118,7 @@ export default function ActivitiesScreen() {
   const handleActivitySelect = async (activity: Activity) => {
     setSelectedActivity(activity);
     try {
-      const response = await Api.getTurn(activity.id); // <- asumimos que `Activity` tiene `.id`
+      const response = await Api.getTurn(activity.id);
       const turnosFormateados: Turn[] = response.data.map((turno: any) => ({
         id: turno.id,
         datetime: turno.datetime,
@@ -140,16 +142,14 @@ export default function ActivitiesScreen() {
   : [];
 
   const handleDateChange = (date: Date) => {
-    const dateStr = moment(date).format("YYYY-MM-DD"); // formateás la fecha
-    handleDateClick(dateStr); // usamos el handler que agrega o saca de la lista
+    const dateStr = moment(date).format("YYYY-MM-DD");
+    handleDateClick(dateStr);
   };
     
   const handleDateClick = (date: string) => {
     if (selectedDates.includes(date)) {
-      // Si ya está seleccionada, la quitamos
       setSelectedDates(prev => prev.filter(d => d !== date));
     } else {
-      // Si no está, la agregamos
       setSelectedDates(prev => [...prev, date]);
     }
   };
@@ -166,9 +166,21 @@ export default function ActivitiesScreen() {
       user_id: userId,
       turn_ids: selectedTurnIds
     };
-    alert("Se simularía el envío de: " + JSON.stringify(dataToSend));
+    setConfirmModalVisible(true);
   };
   
+  const closeModal = () => {
+    setFijados([]);
+    setSelectedHorario(null);
+    setSelectedDates([]);
+    setTurns([])
+    setModalVisible(false)
+  }
+
+  const closeConfirmationModal = () => {
+    setConfirmModalVisible(false)
+    closeModal()
+  }
 
   return (
       <View style={styles.container}>
@@ -182,9 +194,9 @@ export default function ActivitiesScreen() {
             <ActivityCard item={item} onPress={handleActivitySelect} />
           )}
         />
-        <ReservaModal
+        <ReservationModal
           visible={modalVisible}
-          onClose={() => setModalVisible(false)}
+          onClose={() => closeModal()}
           selectedActivity={selectedActivity}
           selectedDates={selectedDates}
           selectedHorario={selectedHorario}
@@ -198,6 +210,12 @@ export default function ActivitiesScreen() {
           handleConfirmPress={handleConfirmPress}
           getTurnosByActivity={getTurnosByActivity}
         />
+        <ConfirmationModal
+          visible={confirmModalVisible}
+          onClose={closeConfirmationModal}
+          mensaje="¡Ya tenés tu turno reservado!"
+        />
+
       </View>
   );
 }
@@ -205,7 +223,7 @@ export default function ActivitiesScreen() {
 const styles = StyleSheet.create({
   container: {
     paddingTop: 40,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.background,
     flex: 1,
     justifyContent: "center",
     alignItems:"center"
@@ -215,7 +233,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
-    color: "#F8CC2B",
+    color: colors.primary,
     textAlign: "center",
   },
 });

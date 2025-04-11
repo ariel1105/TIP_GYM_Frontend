@@ -2,6 +2,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from "react
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import { Routes } from "../constants/routes";
+import colors from "@/theme/colors";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -9,7 +11,7 @@ export default function HomeScreen() {
 
   return (
     <ImageBackground
-      source={require("../../assets/images/fondo.jpg")} // fondo de gimnasio
+      source={require("../../assets/images/fondo.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
@@ -17,11 +19,11 @@ export default function HomeScreen() {
         <Text style={styles.greeting}>Hola, {userName || "Invitado"}!</Text>
         <Text style={styles.question}>¿Qué querés entrenar hoy?</Text>
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => router.push("/activities")}>
+          <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.Activities)}>
             <Icon name="running" size={40} color="#000" />
             <Text style={styles.buttonText}>Actividades</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => router.push("/machines")}>
+          <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.Machines)}>
             <Icon name="dumbbell" size={40} color="#000" />
             <Text style={styles.buttonText}>Máquinas</Text>
           </TouchableOpacity>
@@ -37,7 +39,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // oscurece la imagen de fondo
+    backgroundColor: colors.overlay,
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -46,13 +48,13 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#F8CC2B",
+    color: colors.primary,
     marginBottom: 10,
     textAlign: "center",
   },
   question: {
     fontSize: 20,
-    color: "#FFFFFF",
+    color: colors.white,
     marginBottom: 40,
     textAlign: "center",
   },
@@ -63,19 +65,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   button: {
-    backgroundColor: "#F8CC2B",
+    backgroundColor: colors.primary,
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
     width: "45%",
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
   },
   buttonText: {
-    color: "#000",
+    color: colors.black,
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 10,

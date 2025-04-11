@@ -4,9 +4,10 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet} from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import ScheduleSelector from "./ScheduleSelector";
 import CheckboxDias from "./CheckboxDias";
-import { ReservaModalProps } from "@/types/types";
+import { ReservationModalProps } from "@/types/types";
+import colors from "@/theme/colors";
   
-const ReservaModal: React.FC<ReservaModalProps> = ({
+const ReservationModal: React.FC<ReservationModalProps> = ({
   visible,
   onClose,
   selectedActivity,
@@ -27,7 +28,7 @@ const ReservaModal: React.FC<ReservaModalProps> = ({
       <TouchableOpacity style={styles.closeIcon} onPress={onClose}>
         <Text style={styles.closeIconText}>✕</Text>
       </TouchableOpacity>
-      <Text style={styles.modalTitle}>Reserva tu Activity</Text>
+      <Text style={styles.modalTitle}>Reserva tu Actividad</Text>
       <Text style={styles.modalTitle}>{selectedActivity?.nombre}</Text>
 
       <CalendarPicker
@@ -35,9 +36,11 @@ const ReservaModal: React.FC<ReservaModalProps> = ({
         key={selectedDates.join(",")}
         onDateChange={handleDateChange}
         customDatesStyles={getCustomDatesStyles()}
-        todayBackgroundColor="#EED096"
-        selectedDayColor="#FFC90E"
-        selectedDayTextColor="#000"
+        textStyle={{ color: colors.text }}
+        todayBackgroundColor={'#FFFE91'}
+        selectedDayColor={colors.primary}
+        selectedDayTextColor={colors.onPrimary}
+        dayShape="circle"
       />
 
       {selectedActivity && selectedDates.length > 0 && (
@@ -59,22 +62,28 @@ const ReservaModal: React.FC<ReservaModalProps> = ({
       />
 
       <TouchableOpacity
-        style={styles.confirmButton}
+        style={[
+          styles.confirmButton,
+          !selectedHorario && styles.confirmButtonDisabled
+        ]}
         onPress={handleConfirmPress}
+        disabled={!selectedHorario}
       >
-        <Text style={styles.confirmButtonText}>Confirmar</Text>
+        <Text style={[styles.confirmButtonText,
+                    !selectedHorario && styles.confirmTextDisabled]
+        }>Confirmar</Text>
       </TouchableOpacity>
     </View>
   </Modal>
 );
 
-export default ReservaModal
-  
+export default ReservationModal
+
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#D3D3D3",
+    backgroundColor: colors.background,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -82,7 +91,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
-    color: "#000",
+    color: colors.text,
   },
   closeIcon: {
     position: "absolute",
@@ -94,34 +103,40 @@ const styles = StyleSheet.create({
     height: 36,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colors.surface,
   },
   closeIconText: {
-    color: "#000",
+    color: colors.text,
     fontSize: 22,
     fontWeight: "bold",
   },
   checkboxTitle: {
-    color: "black",
+    color: colors.text,
     textAlign: "center",
     marginTop: 5,
     marginBottom: 5,
     fontWeight: "bold",
   },
-  checkboxButton: {
-    padding: 10,
-    backgroundColor: "black",
-    borderRadius: 6,
-  },
   confirmButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: colors.primary,
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 20
+    marginTop: 20,
   },
   confirmButtonText: {
-    color: "#fff",
+    color: colors.onPrimary,
     fontSize: 16,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
-})
+  confirmButtonDisabled: {
+    backgroundColor: colors.disabledGray,
+    borderColor: colors.grayMedium,
+    borderWidth: 1,
+  },
+  
+  confirmTextDisabled: {
+    color: colors.disabledText,
+  },
+});
+

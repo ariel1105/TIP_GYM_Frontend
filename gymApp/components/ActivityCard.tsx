@@ -1,3 +1,4 @@
+import colors from "@/theme/colors";
 import { ActivityCardProps } from "@/types/types";
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
@@ -30,13 +31,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     left: 10,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: colors.background,
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 6,
   },
   cardTitle: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "bold",
   }
