@@ -35,10 +35,15 @@ const getRegistrations = (member_id: number) => {
     return get(`${API_BASE_URL}member/registrations/${member_id}`)
 }
 
+const getMember = async (member_id: number) => {
+    return get(`${API_BASE_URL}members/${member_id}`)
+}
+
 const Api = {
     getActivities,
     getTurn,
-    getRegistrations
+    getRegistrations,
+    getMember,
 }
 
 export default Api;

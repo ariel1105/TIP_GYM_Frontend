@@ -2,17 +2,38 @@ import { useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Routes } from '../constants/routes';
 import colors from '@/theme/colors';
+import Api from '@/services/Api';
+import { useEffect, useState } from 'react';
 
 export default function Profile() {
   const router = useRouter();
+  const member_id = 1
+
+  const [memberName, setMemberName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchName = async () => {
+      try {
+        const response = await Api.getMember(member_id);
+        setMemberName(response.data.name);
+      } catch (error) {
+        console.error("Error al obtener el nombre del miembro:", error);
+      }
+    };
+
+    fetchName();
+  }, []);
+
 
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarInitial}>C</Text>
+          <Text style={styles.avatarInitial}>
+            {memberName ? memberName[0] : "?"}
+          </Text>
         </View>
-        <Text style={styles.userName}>Camila P.</Text>
+        <Text style={styles.userName}>{memberName || "Cargando..."}</Text>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.Enrollments)}>
