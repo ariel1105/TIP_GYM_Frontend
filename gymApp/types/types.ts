@@ -67,3 +67,7 @@ export interface ConfirmationModalProps {
   onClose: () => void;
   mensaje?: string;
 }
+
+export interface Suscriptions {
+  turnIds: number[]
+}

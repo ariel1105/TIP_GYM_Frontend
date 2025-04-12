@@ -1,13 +1,30 @@
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Routes } from "../constants/routes";
 import colors from "@/theme/colors";
+import Api from "@/services/Api";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [userName, setUserName] = useState<string>('');
+  const member_id = 1
+
+  const [memberName, setMemberName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchName = async () => {
+      try {
+        const response = await Api.getMember(member_id);
+        setMemberName(response.data.name);
+      } catch (error) {
+        console.error("Error al obtener el nombre del miembro:", error);
+      }
+    };
+
+    fetchName();
+  }, []);
+
 
   return (
     <ImageBackground
@@ -16,7 +33,7 @@ export default function HomeScreen() {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-        <Text style={styles.greeting}>Hola, {userName || "Invitado"}!</Text>
+        <Text style={styles.greeting}>Hola, {memberName || "Invitado"}!</Text>
         <Text style={styles.question}>¿Qué querés entrenar hoy?</Text>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.Activities)}>

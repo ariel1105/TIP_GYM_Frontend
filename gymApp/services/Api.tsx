@@ -1,3 +1,4 @@
+import { Suscriptions } from '@/types/types';
 import Axios from 'axios';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -23,6 +24,11 @@ const get = (url: string) =>
         .then((response) => response )
         .catch((error) => Promise.reject(error))
 
+const post = (url: string, body: any) => 
+    Axios.post(url, body)
+        .then((response) => response)
+        .catch((error) => Promise.reject(error.response.data))
+        
 const getActivities = () => {
     return get(`${API_BASE_URL}activities`);
 };
@@ -36,14 +42,20 @@ const getRegistrations = (member_id: number) => {
 }
 
 const getMember = async (member_id: number) => {
-    return get(`${API_BASE_URL}members/${member_id}`)
+    return get(`${API_BASE_URL}member/${member_id}`)
 }
+
+const suscribe = async (body : Suscriptions) => {
+    return post(`${API_BASE_URL}member/subscribe/1`, body);
+}
+
 
 const Api = {
     getActivities,
     getTurn,
     getRegistrations,
     getMember,
+    suscribe,
 }
 
 export default Api;

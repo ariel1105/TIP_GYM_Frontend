@@ -6,7 +6,7 @@ import Api from "@/services/Api";
 import getLocalImage from "../utils/getImages";
 import ActivityCard from "@/components/ActivityCard";
 import ReservationModal from "@/components/ReservationModal";
-import { Activity, DiaSemana, Turn } from "../../types/types";
+import { Activity, DiaSemana, Suscriptions, Turn } from "../../types/types";
 import colors from "@/theme/colors";
 import ConfirmationModal from "@/components/ConfirmationModal";
 
@@ -154,19 +154,18 @@ export default function ActivitiesScreen() {
     }
   };
 
-  const handleConfirmPress = () => {
+  const handleConfirmPress = async () => {
     const selectedTurnIds = turns
       .filter(turn => {
         const fecha = moment(turn.datetime).format("YYYY-MM-DD");
         return selectedDates.includes(fecha) && turn.activityName === selectedActivity?.nombre;
       })
       .map(turn => turn.id);
-
-    const dataToSend = {
-      user_id: userId,
-      turn_ids: selectedTurnIds
-    };
-    setConfirmModalVisible(true);
+      const dataToSend : Suscriptions = {
+        turnIds: selectedTurnIds
+      };
+      const response = await Api.suscribe(dataToSend);
+      setConfirmModalVisible(true);
   };
   
   const closeModal = () => {

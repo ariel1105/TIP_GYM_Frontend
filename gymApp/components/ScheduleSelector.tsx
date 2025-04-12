@@ -1,8 +1,9 @@
 import { ScheduleSelectorProps, Turn } from "@/types/types";
 import moment from "moment";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import  colors from "../theme/colors"
+import Api from "@/services/Api";
 
   const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
     selectedActivity,
@@ -11,7 +12,23 @@ import  colors from "../theme/colors"
     setSelectedHorario,
     getTurnosByActivity,
   }) => {
+    
     const fechaSeleccionada = selectedDates[selectedDates.length - 1];
+    const member_id = 1; 
+    const [memberTurns, setMemberTurns] = useState<number[]>([]);
+
+    useEffect(() => {
+      const fetchMemberTurns = async () => {
+        try {
+          const response = await Api.getMember(member_id)
+          setMemberTurns(response.data.turns || []);
+        } catch (error) {
+          console.error("Error al obtener los turnos del miembro:", error);
+        }
+      };
+
+      fetchMemberTurns();
+    }, []);
   
     const horarios = getTurnosByActivity(selectedActivity.nombre)
       .filter((turno) =>
@@ -21,6 +38,10 @@ import  colors from "../theme/colors"
     const isFull = (turn: Turn) => {
       return turn.capacity - turn.enrolled === 0
     }
+
+    const isSuscribed = (turnId: number) => {
+      return memberTurns.includes(turnId);
+    }    
   
     return (
       <View style={styles.scheduleBox}>
@@ -29,12 +50,13 @@ import  colors from "../theme/colors"
         const hour = moment(turn.datetime).add(3, 'hours').format("HH:mm");
         const isSelected = selectedHorario === hour;
         const full = isFull(turn);
+        const alreadySuscribed = isSuscribed(turn.id)
 
         return (
           <TouchableOpacity
             key={turn.id}
             onPress={() => setSelectedHorario(hour)}
-            disabled={full}
+            disabled={full || alreadySuscribed}
             style={[
               styles.scheduleItemContainer,
               isSelected && styles.scheduleItemSelected,
@@ -44,9 +66,11 @@ import  colors from "../theme/colors"
             <Text style={[
               styles.scheduleItemText,
               isSelected && styles.scheduleItemTextSelected,
-              full && styles.disabledItemText,
+              (full || alreadySuscribed) && styles.disabledItemText,
             ]}>
-              {hour} (Cupos disponibles: {turn.capacity - turn.enrolled})
+              {hour} {alreadySuscribed 
+                ? "(Ya estás inscripto en este turno)" 
+                : `(Cupos disponibles: ${turn.capacity - turn.enrolled})`}
             </Text>
           </TouchableOpacity>
         );
