@@ -1,4 +1,7 @@
+import { darkColors } from "@/theme/colors";
+
 export type DiaSemana = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+export type AppColors = typeof darkColors;
 
 export interface Activity {
   id: number;
@@ -22,8 +25,8 @@ export interface Registration {
 
 
 export interface ActivityCardProps {
-    item: Activity;
-    onPress: (activity: Activity) => void;
+  item: Activity;
+  onPress: (activity: Activity) => void;
 }
 
 export interface CheckboxDiasProps {

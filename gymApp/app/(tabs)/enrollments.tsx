@@ -3,7 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
 import Api from '@/services/Api';
 import { Registration } from '@/types/types';
-import colors from '@/theme/colors';
+import {darkColors} from '@/theme/colors';
+import useColors from '@/theme/useColors';
 
 
 interface Event {
@@ -15,6 +16,8 @@ interface Event {
 export default function Enrollments() {
   const [events, setEvents] = useState<Event[]>([]);
   const member_id = 1;
+
+  const colors = useColors()
 
   useEffect(() => {
     Api.getRegistrations(member_id)
@@ -36,61 +39,59 @@ export default function Enrollments() {
       });
   }, []);
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      padding: 10,
+    },
+    calendarContainer: {
+      backgroundColor: colors.surface,
+      borderRadius: 8,
+      padding: 5,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 24,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+  });
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Mis Inscripciones</Text>
       <View style={styles.calendarContainer}>
-      <Calendar
-        events={events}
-        height={600}
-        mode="week"
-        locale="es-AR"
-        weekStartsOn={1}
-        swipeEnabled={true}
-        showTime={false}
-        eventCellStyle={() => ({
-          backgroundColor: colors.primary,
-          borderRadius: 5,
-        })}
-        eventCellTextColor= {colors.black}
-        theme={{
-          palette: {
-            primary: {
-              main: colors.primary,
-              contrastText: colors.black,
+        <Calendar
+          events={events}
+          height={600}
+          mode="week"
+          locale="es-AR"
+          weekStartsOn={1}
+          swipeEnabled={true}
+          showTime={false}
+          eventCellStyle={() => ({
+            backgroundColor: colors.primary,
+            borderRadius: 5,
+          })}
+          eventCellTextColor={colors.black}
+          theme={{
+            palette: {
+              primary: {
+                main: colors.primary,
+                contrastText: colors.black,
+              },
+              gray: {
+                '200': colors.text, // líneas divisorias
+                '500': colors.text,    // texto cabecera / horas
+                '800': colors.text, // números del día
+              },
+              nowIndicator: '#FF0000',
+              moreLabel: colors.black,
             },
-            gray: {
-              '100': '#ffffff', //celdas
-              '200': '#f7f7f7', // días de la semana
-              '300': '#eaeaea', // líneas divisorias
-              '500': '#cccccc',
-              '800': '#999999', // texto en cabecera y horas
-          },
-            nowIndicator: '#FF0000',
-            moreLabel: colors.black,
-          },
-        }}
-      />
+          }}
+        />
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: 10,
-  },
-  calendarContainer: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: 5,
-  },
-  title: {
-    color: colors.primary,
-    fontSize: 24,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-});
