@@ -1,0 +1,17 @@
+export const imageMap: Record<string, any> = {
+  yoga: require("./yoga.jpg"),
+  crossfit: require("./crossfit.jpg"),
+  zumba: require("./zumba.jpg"),
+  spinning: require("./spinning.jpg"),
+  pilates: require("./pilates.jpg"),
+  hiit: require("./hiit.jpg"),
+  boxeo: require("./boxeo.jpg"),
+  funcional: require("./funcional.jpg"),
+  stretching: require("./stretching.jpg"),
+  bodypump: require("./bodypump.jpg"),
+  cardiodance: require("./cardiodance.jpg"),
+  powerlifting: require("./powerlifting.jpg"),
+  trx: require("./trx.jpg"),
+  kickboxing: require("./kickboxing.jpg"),
+  taichi: require("./taichi.jpg"),
+};
