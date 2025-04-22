@@ -1,4 +1,4 @@
-import colors from "@/theme/colors";
+import {darkColors} from "@/theme/colors";
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from "react-native";
 import Toast from "react-native-toast-message";
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: colors.overlay,
+    backgroundColor: darkColors.overlay,
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: colors.white,
+    color: darkColors.white,
     marginBottom: 30,
     textAlign: "center",
   },
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   optionButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: darkColors.primary,
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 10,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: {
-    color: colors.black,
+    color: darkColors.black,
     fontSize: 18,
     fontWeight: "600",
   },

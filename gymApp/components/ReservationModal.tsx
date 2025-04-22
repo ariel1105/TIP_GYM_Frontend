@@ -5,7 +5,8 @@ import CalendarPicker from "react-native-calendar-picker";
 import ScheduleSelector from "./ScheduleSelector";
 import CheckboxDias from "./CheckboxDias";
 import { ReservationModalProps } from "@/types/types";
-import colors from "@/theme/colors";
+import useColors from "@/theme/useColors";
+
   
 const ReservationModal: React.FC<ReservationModalProps> = ({
   visible,
@@ -22,121 +23,140 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   toggleDia,
   handleConfirmPress,
   getTurnosByActivity,
-}) => (
-  <Modal visible={visible} animationType="slide">
-    <View style={styles.modalContainer}>
-      <TouchableOpacity style={styles.closeIcon} onPress={onClose}>
-        <Text style={styles.closeIconText}>✕</Text>
-      </TouchableOpacity>
-      <Text style={styles.modalTitle}>Reserva tu Actividad</Text>
-      <Text style={styles.modalTitle}>{selectedActivity?.nombre}</Text>
+}) => {
 
-      <CalendarPicker
-        minDate={new Date()}
-        key={selectedDates.join(",")}
-        onDateChange={handleDateChange}
-        customDatesStyles={getCustomDatesStyles()}
-        textStyle={{ color: colors.text }}
-        todayBackgroundColor={'#FFFE91'}
-        selectedDayColor={colors.primary}
-        selectedDayTextColor={colors.onPrimary}
-        dayShape="circle"
-      />
+  const colors= useColors()
 
-      {selectedActivity && selectedDates.length > 0 && (
-        <ScheduleSelector
-          selectedActivity={selectedActivity}
-          selectedDates={selectedDates}
-          selectedHorario={selectedHorario}
-          setSelectedHorario={setSelectedHorario}
-          getTurnosByActivity={getTurnosByActivity}
+  const styles = StyleSheet.create({
+    modalContainer: {
+      flex: 1,
+      padding: 20,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.background,
+    },
+    modalTitle: {
+      fontSize: 24,
+      fontWeight: "bold",
+      marginBottom: 10,
+      color: colors.text,
+      textAlign: "center",
+    },
+    activityName: {
+      fontSize: 20,
+      fontWeight: "600",
+      marginBottom: 20,
+      color: colors.text,
+    },
+    closeIcon: {
+      position: "absolute",
+      top: 40,
+      right: 20,
+      zIndex: 10,
+      borderRadius: 20,
+      width: 36,
+      height: 36,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    closeIconText: {
+      fontSize: 22,
+      fontWeight: "bold",
+      color: colors.text,
+    },
+    checkboxTitle: {
+      textAlign: "center",
+      marginTop: 5,
+      marginBottom: 5,
+      fontWeight: "bold",
+      color: colors.text,
+    },
+    confirmButton: {
+      padding: 12,
+      borderRadius: 8,
+      alignItems: "center",
+      marginTop: 20,
+      backgroundColor: colors.primary,
+    },
+    confirmButtonDisabled: {
+      backgroundColor: colors.disabledGray,
+      borderColor: colors.grayMedium,
+      borderWidth: 1,
+    },
+    confirmButtonText: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: colors.onPrimary,
+    },
+    confirmButtonTextDisabled: {
+      color: colors.disabledText,
+    },
+  });
+
+  return (
+    <Modal visible={visible} animationType="slide">
+      <View style={styles.modalContainer}>
+        <TouchableOpacity style={styles.closeIcon} onPress={onClose}>
+          <Text style={styles.closeIconText}>✕</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.modalTitle}>Reserva tu Actividad</Text>
+        <Text style={styles.activityName}>{selectedActivity?.nombre}</Text>
+
+        <CalendarPicker
+          minDate={new Date()}
+          key={selectedDates.join(",")}
+          onDateChange={handleDateChange}
+          customDatesStyles={getCustomDatesStyles()}
+          textStyle={{ color: colors.text }}
+          todayBackgroundColor={'#FFFE91'}
+          selectedDayColor={colors.primary}
+          selectedDayTextColor={colors.onPrimary}
+          dayShape="circle"
         />
-      )}
 
-      <Text style={styles.checkboxTitle}>Fijar días</Text>
-      <CheckboxDias
-        diasSemana={diasSemana}
-        diasHabilitados={diasHabilitados}
-        fijados={fijados}
-        toggleDia={toggleDia}
-      />
+        {selectedActivity && selectedDates.length > 0 && (
+          <ScheduleSelector
+            selectedActivity={selectedActivity}
+            selectedDates={selectedDates}
+            selectedHorario={selectedHorario}
+            setSelectedHorario={setSelectedHorario}
+            getTurnosByActivity={getTurnosByActivity}
+          />
+        )}
 
-      <TouchableOpacity
-        style={[
-          styles.confirmButton,
-          !selectedHorario && styles.confirmButtonDisabled
-        ]}
-        onPress={handleConfirmPress}
-        disabled={!selectedHorario}
-      >
-        <Text style={[styles.confirmButtonText,
-                    !selectedHorario && styles.confirmTextDisabled]
-        }>Confirmar</Text>
-      </TouchableOpacity>
-    </View>
-  </Modal>
-);
+        <Text style={styles.checkboxTitle}>Fijar días</Text>
+
+        <CheckboxDias
+          diasSemana={diasSemana}
+          diasHabilitados={diasHabilitados}
+          fijados={fijados}
+          toggleDia={toggleDia}
+        />
+
+        <TouchableOpacity
+          style={[
+            styles.confirmButton,
+            !selectedHorario && styles.confirmButtonDisabled,
+          ]}
+          onPress={handleConfirmPress}
+          disabled={!selectedHorario}
+        >
+          <Text
+            style={[
+              styles.confirmButtonText,
+              !selectedHorario && styles.confirmButtonTextDisabled,
+            ]}
+          >
+            Confirmar
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
+}
+  
 
 export default ReservationModal
 
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: colors.background,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: colors.text,
-  },
-  closeIcon: {
-    position: "absolute",
-    top: 40,
-    right: 20,
-    zIndex: 10,
-    borderRadius: 20,
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surface,
-  },
-  closeIconText: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  checkboxTitle: {
-    color: colors.text,
-    textAlign: "center",
-    marginTop: 5,
-    marginBottom: 5,
-    fontWeight: "bold",
-  },
-  confirmButton: {
-    backgroundColor: colors.primary,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  confirmButtonText: {
-    color: colors.onPrimary,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  confirmButtonDisabled: {
-    backgroundColor: colors.disabledGray,
-    borderColor: colors.grayMedium,
-    borderWidth: 1,
-  },
-  
-  confirmTextDisabled: {
-    color: colors.disabledText,
-  },
-});
 

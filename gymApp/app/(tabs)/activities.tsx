@@ -6,11 +6,11 @@ import Api from "@/services/Api";
 import getLocalImage from "../utils/getImages";
 import ActivityCard from "@/components/ActivityCard";
 import ReservationModal from "@/components/ReservationModal";
-import { Activity, DiaSemana, Suscriptions, Turn } from "../../types/types";
-import colors from "@/theme/colors";
+import { Activity, DiaSemana, Suscriptions, Turn, AppColors } from "../../types/types";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import useColors from "@/theme/useColors";
 
-const userId = 123;
+const userId = 1;
 
 export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -21,7 +21,7 @@ export default function ActivitiesScreen() {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-
+  const colors : AppColors = useColors()
 
   const getTurnosByActivity = (activityName: string) => {
     return turns.filter(turn => turn.activityName === activityName);
@@ -181,9 +181,27 @@ export default function ActivitiesScreen() {
     closeModal()
   }
 
+  const styles = StyleSheet.create({
+    container: {
+      paddingTop: 40,
+      backgroundColor: colors.background,
+      flex: 1,
+      justifyContent: "center",
+      alignItems:"center"
+    },
+    title: {
+      marginTop: 20,
+      fontSize: 24,
+      fontWeight: "bold",
+      marginBottom: 20,
+      color: colors.text,
+      textAlign: "center",
+    },
+  });
+
   return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Selecciona una Actividad</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Selecciona una Actividad</Text>
         <FlatList
           data={activities}
           keyExtractor={(item) => item.nombre}
@@ -219,20 +237,3 @@ export default function ActivitiesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingTop: 40,
-    backgroundColor: colors.background,
-    flex: 1,
-    justifyContent: "center",
-    alignItems:"center"
-  },
-  title: {
-    marginTop: 20,
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: colors.primary,
-    textAlign: "center",
-  },
-});

@@ -2,7 +2,7 @@ import { Suscriptions } from '@/types/types';
 import Axios from 'axios';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const API_BASE_URL = 'http://192.168.1.36:8080/';
+export const API_BASE_URL = 'http://192.168.1.33:8080/';
 // const HEADER_AUTH = "Authorization";
 
 // const axiosInstance = Axios.create({
