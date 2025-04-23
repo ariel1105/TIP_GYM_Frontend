@@ -1,31 +1,28 @@
 import { Suscriptions } from '@/types/types';
 import Axios from 'axios';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from "expo-secure-store";
 
-export const API_BASE_URL = 'http://192.168.1.33:8080/';
-// const HEADER_AUTH = "Authorization";
+export const API_BASE_URL = "http://192.168.1.33:8080/";
 
-// const axiosInstance = Axios.create({
-//     baseURL: API_BASE_URL,
-//     timeout: 2000,
-//   });
-  
-// const getToken = async () => {
-//     return await AsyncStorage.getItem('token');
-// };
+const axiosInstance = Axios.create({
+  baseURL: API_BASE_URL,
+});
 
-// const header = async () => {
-//     const token = await getToken();
-//     return { headers: { [HEADER_AUTH]: token} };
-// };
+axiosInstance.interceptors.request.use(async (config) => {
+  const token = await SecureStore.getItemAsync("token");
+  if (token) {
+    config.headers.Authorization = token;
+  }
+  return config;
+});
 
 const get = (url: string) => 
-    Axios.get(url)
+    axiosInstance.get(url)
         .then((response) => response )
         .catch((error) => Promise.reject(error))
 
 const post = (url: string, body: any) => 
-    Axios.post(url, body)
+    axiosInstance.post(url, body)
         .then((response) => response)
         .catch((error) => Promise.reject(error.response.data))
         
@@ -49,6 +46,18 @@ const suscribe = async (body : Suscriptions) => {
     return post(`${API_BASE_URL}member/subscribe/1`, body);
 }
 
+const login = async (body: { username: string; password: string }) => {
+    return post(`${API_BASE_URL}auth/login`, body); 
+};
+
+const register = async (body: {
+    username: string;
+    password: string;
+    email: string;
+}) => {
+    return post(`${API_BASE_URL}auth/register`, body);
+};
+
 
 const Api = {
     getActivities,
@@ -56,6 +65,8 @@ const Api = {
     getRegistrations,
     getMember,
     suscribe,
+    login,
+    register
 }
 
 export default Api;

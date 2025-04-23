@@ -1,13 +1,14 @@
+// app/_layout.tsx
+import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/theme/ThemeContext";
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
 
-const Layout = () => {
-    return(
-        <ThemeProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name ="(tabs)" />
-            </Stack>
-        </ThemeProvider>
-    )
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <Slot />
+      </AuthProvider>
+    </ThemeProvider>
+  );
 }
-export default Layout
