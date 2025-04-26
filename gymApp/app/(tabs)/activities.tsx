@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
 import Api from "@/services/Api";
@@ -7,21 +7,30 @@ import getLocalImage from "../utils/getImages";
 import ActivityCard from "@/components/ActivityCard";
 import ReservationModal from "@/components/ReservationModal";
 import { Activity, DiaSemana, Suscriptions, Turn, AppColors } from "../../types/types";
-import ConfirmationModal from "@/components/ConfirmationModal";
+import AlertModal from "@/components/AlertModal";
 import useColors from "@/theme/useColors";
-
-const userId = 1;
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
 
 export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [fijados, setFijados] = useState<DiaSemana[]>([]);
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+
   const colors : AppColors = useColors()
+
+  const { token, member } = useAuth();
+
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
+
+  const router = useRouter();
+
 
   const getTurnosByActivity = (activityName: string) => {
     return turns.filter(turn => turn.activityName === activityName);
@@ -155,18 +164,34 @@ export default function ActivitiesScreen() {
   };
 
   const handleConfirmPress = async () => {
+    if (!member || !token) {
+      setLoginModalVisible(true);
+      return;
+    }
     const selectedTurnIds = turns
       .filter(turn => {
         const fecha = moment(turn.datetime).format("YYYY-MM-DD");
         return selectedDates.includes(fecha) && turn.activityName === selectedActivity?.nombre;
       })
       .map(turn => turn.id);
-      const dataToSend : Suscriptions = {
-        turnIds: selectedTurnIds
-      };
-      const response = await Api.suscribe(dataToSend);
+
+    const suscriptionBody : Suscriptions = {
+      turnIds: selectedTurnIds
+    };
+    
+    if (selectedDates.length === 0) {
+      Alert.alert("No se seleccionaron turnos válidos.");
+      return;
+    }
+    try {
+      await Api.suscribe(member.id, suscriptionBody, token);
       setConfirmModalVisible(true);
+    } catch (error) {
+      Alert.alert("Error al suscribirse", JSON.stringify(error));
+      console.error("Error al suscribirse:", error);
+    }
   };
+  
   
   const closeModal = () => {
     setFijados([]);
@@ -180,6 +205,13 @@ export default function ActivitiesScreen() {
     setConfirmModalVisible(false)
     closeModal()
   }
+
+  const closeLoginModal = () => {
+    setLoginModalVisible(false)
+    closeModal()
+    router.push("/login")
+  }
+
 
   const styles = StyleSheet.create({
     container: {
@@ -227,11 +259,18 @@ export default function ActivitiesScreen() {
           handleConfirmPress={handleConfirmPress}
           getTurnosByActivity={getTurnosByActivity}
         />
-        <ConfirmationModal
+        <AlertModal
           visible={confirmModalVisible}
           onClose={closeConfirmationModal}
           mensaje="¡Ya tenés tu turno reservado!"
         />
+
+        <AlertModal
+          visible={loginModalVisible}
+          onClose={closeLoginModal}
+          mensaje="Para esta acción necesitás estar logueado."
+        />
+
 
       </View>
   );

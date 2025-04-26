@@ -5,6 +5,7 @@ import Api from '@/services/Api';
 import { Registration } from '@/types/types';
 import {darkColors} from '@/theme/colors';
 import useColors from '@/theme/useColors';
+import { useAuth } from '@/context/AuthContext';
 
 
 interface Event {
@@ -14,18 +15,21 @@ interface Event {
 }
 
 export default function Enrollments() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const member_id = 1;
+  const [events, setEvents] = useState<Event[]>([])
 
   const colors = useColors()
 
+  const { member } = useAuth();
+
   useEffect(() => {
-    Api.getRegistrations(member_id)
+    if (!member?.id) return;
+
+    Api.getRegistrations(member.id)
       .then((response) => {
         const formattedEvents: Event[] = response.data.map((item: Registration) => {
           const start = new Date(item.startTime);
           start.setHours(start.getHours() + 3);
-          const end = new Date(start.getTime() + 60 * 60 * 1000); // Suponemos duracion de 1 hora
+          const end = new Date(start.getTime() + 60 * 60 * 1000); // Suponemos duracion de una hora
           return {
             title: item.activityName,
             start,
@@ -37,7 +41,7 @@ export default function Enrollments() {
       .catch((error) => {
         console.error('Error al obtener inscripciones:', error);
       });
-  }, []);
+  }, [member?.id]);
 
   const styles = StyleSheet.create({
     container: {

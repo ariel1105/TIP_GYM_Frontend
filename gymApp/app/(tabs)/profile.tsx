@@ -1,31 +1,15 @@
 import { useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Routes } from '../constants/routes';
-import {darkColors} from '@/theme/colors';
-import Api from '@/services/Api';
-import { useEffect, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import useColors from '@/theme/useColors';
 
 export default function Profile() {
   const router = useRouter();
-  const member_id = 1
+  const colors = useColors();
+  const { member } = useAuth();
 
-  const [memberName, setMemberName] = useState<string | null>(null);
-
-  const colors = useColors()
-
-  useEffect(() => {
-    const fetchName = async () => {
-      try {
-        const response = await Api.getMember(member_id);
-        setMemberName(response.data.name);
-      } catch (error) {
-        console.error("Error al obtener el nombre del miembro:", error);
-      }
-    };
-
-    fetchName();
-  }, []);
+  const memberName = member?.name;
 
   const styles = StyleSheet.create({
     container: {

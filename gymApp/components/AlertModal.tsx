@@ -1,9 +1,9 @@
 import React from "react";
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { ConfirmationModalProps } from "@/types/types";
+import { AlertModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
 
-const ConfirmationModal = ({ visible, onClose, mensaje }: ConfirmationModalProps) => {
+const AlertModal = ({ visible, onClose, mensaje }: AlertModalProps) => {
 
   const colors = useColors()
 
@@ -64,4 +64,4 @@ const ConfirmationModal = ({ visible, onClose, mensaje }: ConfirmationModalProps
   );
 };
 
-export default ConfirmationModal;
+export default AlertModal;
