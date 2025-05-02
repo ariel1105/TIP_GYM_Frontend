@@ -16,8 +16,6 @@ export const API_BASE_URL = "http://192.168.1.44:8080/";
 //   return config;
 // });
 
-const HEADER_AUTH = "Authorization";
-
 const axiosInstance = Axios.create({
     baseURL: API_BASE_URL,
     timeout: 2000,
@@ -43,12 +41,16 @@ const getTurn = (activity_id: number) => {
     return get(`${API_BASE_URL}turns/${activity_id}`)
 }
 
-const getRegistrations = (member_id: number) => {
-    return get(`${API_BASE_URL}member/registrations/${member_id}`)
+const getRegistrations = (member_id: number, token: string) => {
+    return get(`${API_BASE_URL}member/registrations/${member_id}`,  {
+        headers: { "Authorization": `Bearer ${token}`} 
+   });
 }
 
-const getMember = async (member_id: number) => {
-    return get(`${API_BASE_URL}member/${member_id}`)
+const getMember = async (member_id: number, token: string) => {
+    return get(`${API_BASE_URL}member/${member_id}`,  {
+        headers: { "Authorization": `Bearer ${token}`} 
+   });
 }
 
 const getMemberByUsername = (username: string, token: string) => {

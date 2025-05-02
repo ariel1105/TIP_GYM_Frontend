@@ -1,9 +1,9 @@
 import React from "react";
-import { Modal, View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Pressable } from "react-native";
 import { AlertModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
 
-const AlertModal = ({ visible, onClose, mensaje }: AlertModalProps) => {
+const AlertModal = ({ visible, onClose, title, mensaje, action, pressableText, hideCloseButton}: AlertModalProps) => {
 
   const colors = useColors()
 
@@ -29,13 +29,13 @@ const AlertModal = ({ visible, onClose, mensaje }: AlertModalProps) => {
       fontSize: 22,
       fontWeight: "bold",
       marginBottom: 10,
-      color: colors.text,
+      color: colors.black,
     },
     message: {
       fontSize: 16,
       textAlign: "center",
       marginBottom: 20,
-      color: colors.text,
+      color: colors.black,
     },
     button: {
       paddingVertical: 10,
@@ -47,17 +47,29 @@ const AlertModal = ({ visible, onClose, mensaje }: AlertModalProps) => {
       fontWeight: "bold",
       color: colors.onPrimary,
     },
+    pressableText: {
+      marginTop: 20,
+      textAlign: "center",
+      color: colors.black,
+    },
   });
   
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.container}>
-          <Text style={styles.title}>¡Listo!</Text>
+          <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{mensaje}</Text>
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>OK</Text>
-          </TouchableOpacity>
+          {!hideCloseButton && (
+            <TouchableOpacity style={styles.button} onPress={onClose}>
+              <Text style={styles.buttonText}>Cerrar</Text>
+            </TouchableOpacity>
+          )}
+          <Pressable  onPress={action}>
+            <Text style={styles.pressableText}>
+              {pressableText}
+            </Text>
+          </Pressable>
         </View>
       </View>
     </Modal>

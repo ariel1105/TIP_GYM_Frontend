@@ -32,7 +32,7 @@ export default function Login() {
       borderColor: colors.black,
       borderRadius: 8,
       backgroundColor: colors.cardBackground,
-      color: colors.text,
+      color: colors.black,
     },
     registerLink: {
       marginTop: 20,
@@ -78,6 +78,11 @@ export default function Login() {
       <Pressable  onPress={() => router.push("/register")}>
         <Text style={styles.registerLink}>
           ¿No tenés una cuenta? Registrate acá
+        </Text>
+      </Pressable>
+      <Pressable  onPress={() => router.push("/home")}>
+        <Text style={styles.registerLink}>
+          Continuar sin una cuenta
         </Text>
       </Pressable>
     </View>

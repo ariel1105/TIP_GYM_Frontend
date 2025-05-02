@@ -19,13 +19,13 @@ export default function Enrollments() {
 
   const colors = useColors()
 
-  const { member } = useAuth();
+  const { member, token } = useAuth();
 
   useEffect(() => {
     if (!member?.id) return;
 
-    Api.getRegistrations(member.id)
-      .then((response) => {
+    Api.getRegistrations(member.id, token!)
+      .then((response: any) => {
         const formattedEvents: Event[] = response.data.map((item: Registration) => {
           const start = new Date(item.startTime);
           start.setHours(start.getHours() + 3);
@@ -38,7 +38,7 @@ export default function Enrollments() {
         });
         setEvents(formattedEvents);
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.error('Error al obtener inscripciones:', error);
       });
   }, [member?.id]);

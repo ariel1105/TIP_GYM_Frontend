@@ -6,6 +6,8 @@ export const darkColors = {
   secondary: '#FF9833',
   onSecondary: '#000000',
 
+  today:'#FFFE91',
+
   onConfirm: '#000',
 
   // 🧱 Neutrals
@@ -40,6 +42,7 @@ export const lightColors = {
   onPrimary: '#000000',
   secondary: '#FF8808',
   onSecondary: '#000000',
+  today: '#FFFE91',
   onConfirm: '#000',
   background: '#EDEDED',
   surface: '#e0e0e0',

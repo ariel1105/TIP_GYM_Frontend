@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Routes } from '../constants/routes';
 import { useAuth } from '@/context/AuthContext';
 import useColors from '@/theme/useColors';
+import { useEffect, useState } from 'react';
+import AlertModal from '@/components/AlertModal';
 
 export default function Profile() {
   const router = useRouter();
@@ -10,6 +12,14 @@ export default function Profile() {
   const { member } = useAuth();
 
   const memberName = member?.name;
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  
+  useEffect(() => {
+    if (!member) {
+      setShowLoginModal(true);
+    }
+  }, [member]);
 
   const styles = StyleSheet.create({
     container: {
@@ -85,6 +95,15 @@ export default function Profile() {
       <TouchableOpacity style={styles.disabledButton} disabled>
         <Text style={styles.disabledText}>Editar perfil (próximamente)</Text>
       </TouchableOpacity>
+      <AlertModal
+        visible={showLoginModal}
+        onClose={() => {}}
+        title="No estás logueado"
+        mensaje="Por favor, iniciá sesión para continuar."
+        action={() => router.replace('/login')}
+        pressableText="Ir al login"
+        hideCloseButton
+      />
     </View>
   );
 }

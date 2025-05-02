@@ -14,16 +14,16 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
   getTurnosByActivity,
 }) => {
   const colors = useColors();
-  const { member } = useAuth();
+  const { member, token } = useAuth();
   const fechaSeleccionada = selectedDates[selectedDates.length - 1];
   const [memberTurns, setMemberTurns] = useState<number[]>([]);
 
   useEffect(() => {
     const fetchMemberTurns = async () => {
       try {
-        if (!member?.id) return;
+        if (!member?.id) return
 
-        const response = await Api.getMember(member.id);
+        const response = await Api.getMember(member.id, token!);
         setMemberTurns(response.data.turns || []);
       } catch (error) {
         console.error("Error al obtener los turnos del miembro:", error);

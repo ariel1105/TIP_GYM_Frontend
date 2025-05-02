@@ -68,7 +68,11 @@ export interface ScheduleSelectorProps {
 export interface AlertModalProps {
   visible: boolean;
   onClose: () => void;
+  title: string;
   mensaje?: string;
+  action? : () => void;
+  pressableText?: string;
+  hideCloseButton?: boolean;
 }
 
 export interface Suscriptions {

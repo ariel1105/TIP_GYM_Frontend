@@ -16,18 +16,19 @@ export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
-  const [modalVisible, setModalVisible] = useState(false);
+  const [reservationModalVisible, setReservationModalVisible] = useState(false);
   const [fijados, setFijados] = useState<DiaSemana[]>([]);
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [inscriptionSuccessModalVisible, setInscriptionSuccessModalVisible] = useState(false);
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [noTurnsModalVisible, setNoTurnsModalVisible] = useState(false);
+
 
   const colors : AppColors = useColors()
 
   const { token, member } = useAuth();
-
-  const [loginModalVisible, setLoginModalVisible] = useState(false);
 
   const router = useRouter();
 
@@ -53,7 +54,7 @@ export default function ActivitiesScreen() {
         setActivities(ActivityesConImagen);
       })
       .catch((error) => {
-        console.error("Error al traer Activityes:", error);
+        console.error("Error al traer Activities:", error);
       });
   }, []);
 
@@ -136,10 +137,12 @@ export default function ActivitiesScreen() {
         activityName: turno.activity.name
       }));
       setTurns(turnosFormateados);
-    } catch (error) {
-      console.error("Error al traer turnos:", error);
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        setNoTurnsModalVisible(true);
+      }
     }
-    setModalVisible(true);
+    setReservationModalVisible(true);
   };
   
 
@@ -185,7 +188,7 @@ export default function ActivitiesScreen() {
     }
     try {
       await Api.suscribe(member.id, suscriptionBody, token);
-      setConfirmModalVisible(true);
+      setInscriptionSuccessModalVisible(true);
     } catch (error) {
       Alert.alert("Error al suscribirse", JSON.stringify(error));
       console.error("Error al suscribirse:", error);
@@ -198,20 +201,37 @@ export default function ActivitiesScreen() {
     setSelectedHorario(null);
     setSelectedDates([]);
     setTurns([])
-    setModalVisible(false)
+    setReservationModalVisible(false)
   }
 
-  const closeConfirmationModal = () => {
-    setConfirmModalVisible(false)
+  const closeInscriptionSuccessModal = () => {
+    setInscriptionSuccessModalVisible(false)
     closeModal()
   }
 
-  const closeLoginModal = () => {
+  const goToInscriptions = () => {
+      setInscriptionSuccessModalVisible(false)
+      closeModal()
+      router.push("/(tabs)/enrollments")
+    }
+
+  const goToLogin = () => {
     setLoginModalVisible(false)
     closeModal()
     router.push("/login")
   }
 
+  const closeLoginModal = () => {
+    setLoginModalVisible(false)
+    closeModal()
+  }
+
+  const closeNoTurnsModal = () => {
+    setNoTurnsModalVisible(false)
+    closeModal()
+  }
+
+  
 
   const styles = StyleSheet.create({
     container: {
@@ -244,7 +264,7 @@ export default function ActivitiesScreen() {
           )}
         />
         <ReservationModal
-          visible={modalVisible}
+          visible={reservationModalVisible}
           onClose={() => closeModal()}
           selectedActivity={selectedActivity}
           selectedDates={selectedDates}
@@ -260,15 +280,29 @@ export default function ActivitiesScreen() {
           getTurnosByActivity={getTurnosByActivity}
         />
         <AlertModal
-          visible={confirmModalVisible}
-          onClose={closeConfirmationModal}
+          visible={inscriptionSuccessModalVisible}
+          onClose={closeInscriptionSuccessModal}
+          title={"¡Listo!"}
           mensaje="¡Ya tenés tu turno reservado!"
+          pressableText="Ir a mis inscripciones"
+          action={goToInscriptions}
+
         />
 
         <AlertModal
           visible={loginModalVisible}
           onClose={closeLoginModal}
+          title={"¡Atencion!"}
           mensaje="Para esta acción necesitás estar logueado."
+          pressableText="Loguearme"
+          action={goToLogin}
+        />
+
+        <AlertModal
+          visible={noTurnsModalVisible}
+          onClose={closeNoTurnsModal}
+          title="Sin turnos disponibles"
+          mensaje="No hay turnos disponibles para esta actividad desde hoy en adelante."
         />
 
 
