@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
 import Api from "@/services/Api";
@@ -7,21 +7,31 @@ import getLocalImage from "../utils/getImages";
 import ActivityCard from "@/components/ActivityCard";
 import ReservationModal from "@/components/ReservationModal";
 import { Activity, DiaSemana, Suscriptions, Turn, AppColors } from "../../types/types";
-import ConfirmationModal from "@/components/ConfirmationModal";
+import AlertModal from "@/components/AlertModal";
 import useColors from "@/theme/useColors";
-
-const userId = 1;
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
 
 export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+
+  const [reservationModalVisible, setReservationModalVisible] = useState(false);
   const [fijados, setFijados] = useState<DiaSemana[]>([]);
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [inscriptionSuccessModalVisible, setInscriptionSuccessModalVisible] = useState(false);
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [noTurnsModalVisible, setNoTurnsModalVisible] = useState(false);
+
+
   const colors : AppColors = useColors()
+
+  const { token, member } = useAuth();
+
+  const router = useRouter();
+
 
   const getTurnosByActivity = (activityName: string) => {
     return turns.filter(turn => turn.activityName === activityName);
@@ -44,7 +54,7 @@ export default function ActivitiesScreen() {
         setActivities(ActivityesConImagen);
       })
       .catch((error) => {
-        console.error("Error al traer Activityes:", error);
+        console.error("Error al traer Activities:", error);
       });
   }, []);
 
@@ -127,10 +137,12 @@ export default function ActivitiesScreen() {
         activityName: turno.activity.name
       }));
       setTurns(turnosFormateados);
-    } catch (error) {
-      console.error("Error al traer turnos:", error);
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        setNoTurnsModalVisible(true);
+      }
     }
-    setModalVisible(true);
+    setReservationModalVisible(true);
   };
   
 
@@ -155,31 +167,71 @@ export default function ActivitiesScreen() {
   };
 
   const handleConfirmPress = async () => {
+    if (!member || !token) {
+      setLoginModalVisible(true);
+      return;
+    }
     const selectedTurnIds = turns
       .filter(turn => {
         const fecha = moment(turn.datetime).format("YYYY-MM-DD");
         return selectedDates.includes(fecha) && turn.activityName === selectedActivity?.nombre;
       })
       .map(turn => turn.id);
-      const dataToSend : Suscriptions = {
-        turnIds: selectedTurnIds
-      };
-      const response = await Api.suscribe(dataToSend);
-      setConfirmModalVisible(true);
+
+    const suscriptionBody : Suscriptions = {
+      turnIds: selectedTurnIds
+    };
+    
+    if (selectedDates.length === 0) {
+      Alert.alert("No se seleccionaron turnos válidos.");
+      return;
+    }
+    try {
+      await Api.suscribe(member.id, suscriptionBody, token);
+      setInscriptionSuccessModalVisible(true);
+    } catch (error) {
+      Alert.alert("Error al suscribirse", JSON.stringify(error));
+      console.error("Error al suscribirse:", error);
+    }
   };
+  
   
   const closeModal = () => {
     setFijados([]);
     setSelectedHorario(null);
     setSelectedDates([]);
     setTurns([])
-    setModalVisible(false)
+    setReservationModalVisible(false)
   }
 
-  const closeConfirmationModal = () => {
-    setConfirmModalVisible(false)
+  const closeInscriptionSuccessModal = () => {
+    setInscriptionSuccessModalVisible(false)
     closeModal()
   }
+
+  const goToInscriptions = () => {
+      setInscriptionSuccessModalVisible(false)
+      closeModal()
+      router.push("/(tabs)/enrollments")
+    }
+
+  const goToLogin = () => {
+    setLoginModalVisible(false)
+    closeModal()
+    router.push("/login")
+  }
+
+  const closeLoginModal = () => {
+    setLoginModalVisible(false)
+    closeModal()
+  }
+
+  const closeNoTurnsModal = () => {
+    setNoTurnsModalVisible(false)
+    closeModal()
+  }
+
+  
 
   const styles = StyleSheet.create({
     container: {
@@ -212,7 +264,7 @@ export default function ActivitiesScreen() {
           )}
         />
         <ReservationModal
-          visible={modalVisible}
+          visible={reservationModalVisible}
           onClose={() => closeModal()}
           selectedActivity={selectedActivity}
           selectedDates={selectedDates}
@@ -227,11 +279,32 @@ export default function ActivitiesScreen() {
           handleConfirmPress={handleConfirmPress}
           getTurnosByActivity={getTurnosByActivity}
         />
-        <ConfirmationModal
-          visible={confirmModalVisible}
-          onClose={closeConfirmationModal}
+        <AlertModal
+          visible={inscriptionSuccessModalVisible}
+          onClose={closeInscriptionSuccessModal}
+          title={"¡Listo!"}
           mensaje="¡Ya tenés tu turno reservado!"
+          pressableText="Ir a mis inscripciones"
+          action={goToInscriptions}
+
         />
+
+        <AlertModal
+          visible={loginModalVisible}
+          onClose={closeLoginModal}
+          title={"¡Atencion!"}
+          mensaje="Para esta acción necesitás estar logueado."
+          pressableText="Loguearme"
+          action={goToLogin}
+        />
+
+        <AlertModal
+          visible={noTurnsModalVisible}
+          onClose={closeNoTurnsModal}
+          title="Sin turnos disponibles"
+          mensaje="No hay turnos disponibles para esta actividad desde hoy en adelante."
+        />
+
 
       </View>
   );

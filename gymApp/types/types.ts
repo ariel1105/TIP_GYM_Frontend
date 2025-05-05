@@ -65,12 +65,33 @@ export interface ScheduleSelectorProps {
     getTurnosByActivity: (activityName: string) => Turn[];
 }
 
-export interface ConfirmationModalProps {
+export interface AlertModalProps {
   visible: boolean;
   onClose: () => void;
+  title: string;
   mensaje?: string;
+  action? : () => void;
+  pressableText?: string;
+  hideCloseButton?: boolean;
 }
 
 export interface Suscriptions {
-  turnIds: number[]
+  turnIds: number[];
+}
+
+export interface Member {
+  id: number;
+  name: string;
+  username: string;
+}
+
+export interface UserLogin {
+  username: string;
+  password: string
+}
+
+export interface UserRegister {
+  name: string;
+  username: string;
+  password: string
 }

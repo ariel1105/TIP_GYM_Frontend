@@ -1,31 +1,25 @@
 import { useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Routes } from '../constants/routes';
-import {darkColors} from '@/theme/colors';
-import Api from '@/services/Api';
-import { useEffect, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import useColors from '@/theme/useColors';
+import { useEffect, useState } from 'react';
+import AlertModal from '@/components/AlertModal';
 
 export default function Profile() {
   const router = useRouter();
-  const member_id = 1
+  const colors = useColors();
+  const { member } = useAuth();
 
-  const [memberName, setMemberName] = useState<string | null>(null);
+  const memberName = member?.name;
 
-  const colors = useColors()
-
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  
   useEffect(() => {
-    const fetchName = async () => {
-      try {
-        const response = await Api.getMember(member_id);
-        setMemberName(response.data.name);
-      } catch (error) {
-        console.error("Error al obtener el nombre del miembro:", error);
-      }
-    };
-
-    fetchName();
-  }, []);
+    if (!member) {
+      setShowLoginModal(true);
+    }
+  }, [member]);
 
   const styles = StyleSheet.create({
     container: {
@@ -101,6 +95,15 @@ export default function Profile() {
       <TouchableOpacity style={styles.disabledButton} disabled>
         <Text style={styles.disabledText}>Editar perfil (próximamente)</Text>
       </TouchableOpacity>
+      <AlertModal
+        visible={showLoginModal}
+        onClose={() => {}}
+        title="No estás logueado"
+        mensaje="Por favor, iniciá sesión para continuar."
+        action={() => router.replace('/login')}
+        pressableText="Ir al login"
+        hideCloseButton
+      />
     </View>
   );
 }

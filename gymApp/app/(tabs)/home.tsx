@@ -6,37 +6,22 @@ import { Routes } from "../constants/routes";
 import useColors from "@/theme/useColors";
 import Api from "@/services/Api";
 import { AppColors } from "@/types/types";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const member_id = 1
+  const router = useRouter()
+  const { member } = useAuth()
   const colors : AppColors = useColors()
-
-  const [memberName, setMemberName] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchName = async () => {
-      try {
-        const response = await Api.getMember(member_id);
-        setMemberName(response.data.name);
-      } catch (error) {
-        console.error("Error al obtener el nombre del miembro:", error);
-      }
-    };
-
-    fetchName();
-  }, []);
-
 
   return (
     <ImageBackground
       source={require("../../assets/images/fondo.jpg")}
-      style={[styles.background]}
+      style={styles.background}
       resizeMode="cover"
     >
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
         <Text style={[styles.greeting, { color: colors.text }]}>
-          Hola, {memberName || "Invitado"}!
+          Hola, {member?.name || "Invitado"}!
         </Text>
         <Text style={[styles.question, { color: colors.text }]}>
           ¿Qué querés entrenar hoy?
