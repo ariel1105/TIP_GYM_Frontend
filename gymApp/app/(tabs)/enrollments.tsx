@@ -6,13 +6,7 @@ import { Registration } from '@/types/types';
 import {darkColors} from '@/theme/colors';
 import useColors from '@/theme/useColors';
 import { useAuth } from '@/context/AuthContext';
-
-
-interface Event {
-  title: string;
-  start: Date;
-  end: Date;
-}
+import { Event } from '@/types/types';
 
 export default function Enrollments() {
   const [events, setEvents] = useState<Event[]>([])
@@ -22,9 +16,9 @@ export default function Enrollments() {
   const { member, token } = useAuth();
 
   useEffect(() => {
-    if (!member?.id) return;
+    if (!member) return;
 
-    Api.getRegistrations(member.id, token!)
+    Api.getRegistrations(token!)
       .then((response: any) => {
         const formattedEvents: Event[] = response.data.map((item: Registration) => {
           const start = new Date(item.startTime);
@@ -41,7 +35,7 @@ export default function Enrollments() {
       .catch((error: any) => {
         console.error('Error al obtener inscripciones:', error);
       });
-  }, [member?.id]);
+  }, [member]);
 
   const styles = StyleSheet.create({
     container: {

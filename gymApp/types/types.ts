@@ -65,6 +65,13 @@ export interface ScheduleSelectorProps {
     getTurnosByActivity: (activityName: string) => Turn[];
 }
 
+export interface Event {
+  id?: number;
+  title: string;
+  start: Date;
+  end: Date;
+}
+
 export interface AlertModalProps {
   visible: boolean;
   onClose: () => void;

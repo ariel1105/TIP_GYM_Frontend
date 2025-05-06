@@ -1,4 +1,3 @@
-// context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { router, useRouter } from "expo-router";
@@ -27,7 +26,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const storedToken = await SecureStore.getItemAsync("token");
       if (storedToken) {
         setToken(storedToken);
-        // ppdemos tener funcion getCurrentMember para obtener el usuario actual
       }
     };
     loadToken();
@@ -42,7 +40,7 @@ const login = async ({ username, password }: UserLogin) => {
     setToken(token);
     await SecureStore.setItemAsync("token", token);
 
-    const memberResponse = await Api.getMemberByUsername(username, token);
+    const memberResponse = await Api.getMember(token);
     setMember(memberResponse.data);
 
     Alert.alert("Redirigiendo a Home...");
@@ -58,7 +56,7 @@ const login = async ({ username, password }: UserLogin) => {
       setToken(token);
       await SecureStore.setItemAsync("token", token);
 
-      const memberResponse = await Api.getMemberByUsername(userData.username, token);
+      const memberResponse = await Api.getMember(token);
       setMember(memberResponse.data);
 
       router.push(Routes.Home)} 

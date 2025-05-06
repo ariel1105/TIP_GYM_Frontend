@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
+import { View, Text, StyleSheet, FlatList, Alert, Switch } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
 import Api from "@/services/Api";
@@ -11,6 +11,7 @@ import AlertModal from "@/components/AlertModal";
 import useColors from "@/theme/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
+import WeeklyCalendarView from "@/components/WeeklyCalendarView";
 
 export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -24,6 +25,8 @@ export default function ActivitiesScreen() {
   const [inscriptionSuccessModalVisible, setInscriptionSuccessModalVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [noTurnsModalVisible, setNoTurnsModalVisible] = useState(false);
+
+  const [showWeeklyView, setShowWeeklyView] = useState(false);
 
 
   const colors : AppColors = useColors()
@@ -129,14 +132,7 @@ export default function ActivitiesScreen() {
     setSelectedActivity(activity);
     try {
       const response = await Api.getTurn(activity.id);
-      const turnosFormateados: Turn[] = response.data.map((turno: any) => ({
-        id: turno.id,
-        datetime: turno.datetime,
-        capacity: turno.capacity,
-        enrolled: turno.enrolled,
-        activityName: turno.activity.name
-      }));
-      setTurns(turnosFormateados);
+      setTurns(response.data);
     } catch (error: any) {
       if (error.response?.status === 404) {
         setNoTurnsModalVisible(true);
@@ -187,7 +183,7 @@ export default function ActivitiesScreen() {
       return;
     }
     try {
-      await Api.suscribe(member.id, suscriptionBody, token);
+      await Api.suscribe(suscriptionBody, token);
       setInscriptionSuccessModalVisible(true);
     } catch (error) {
       Alert.alert("Error al suscribirse", JSON.stringify(error));
@@ -234,79 +230,107 @@ export default function ActivitiesScreen() {
   
 
   const styles = StyleSheet.create({
-    container: {
-      paddingTop: 40,
+    containerList: {
+      padding: 10,
       backgroundColor: colors.background,
       flex: 1,
       justifyContent: "center",
       alignItems:"center"
     },
+    containerCalendar: {
+      flex: 1,
+      backgroundColor: colors.background,
+      padding: 10,
+    },
     title: {
-      marginTop: 20,
+      marginTop: 10,
       fontSize: 24,
       fontWeight: "bold",
       marginBottom: 20,
       color: colors.text,
       textAlign: "center",
     },
+    switchContainer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    switchText: {
+      color: colors.text,
+      marginRight: 10,
+    },
   });
 
   return (
-    <View style={styles.container}>
+    <View style={showWeeklyView ? styles.containerCalendar : styles.containerList}>
       <Text style={styles.title}>Selecciona una Actividad</Text>
-        <FlatList
-          data={activities}
-          keyExtractor={(item) => item.nombre}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          renderItem={({ item }) => (
-            <ActivityCard item={item} onPress={handleActivitySelect} />
-          )}
-        />
-        <ReservationModal
-          visible={reservationModalVisible}
-          onClose={() => closeModal()}
-          selectedActivity={selectedActivity}
-          selectedDates={selectedDates}
-          selectedHorario={selectedHorario}
-          setSelectedHorario={setSelectedHorario}
-          handleDateChange={handleDateChange}
-          getCustomDatesStyles={getCustomDatesStyles}
-          diasSemana={diasSemana}
-          diasHabilitados={diasHabilitados}
-          fijados={fijados}
-          toggleDia={toggleDia}
-          handleConfirmPress={handleConfirmPress}
-          getTurnosByActivity={getTurnosByActivity}
-        />
-        <AlertModal
-          visible={inscriptionSuccessModalVisible}
-          onClose={closeInscriptionSuccessModal}
-          title={"¡Listo!"}
-          mensaje="¡Ya tenés tu turno reservado!"
-          pressableText="Ir a mis inscripciones"
-          action={goToInscriptions}
+        {/* Toggle */}
+        <View style={styles.switchContainer}>
+          <Text style={styles.switchText}>Vista semanal</Text>
+          <Switch
+            value={showWeeklyView}
+            onValueChange={() => setShowWeeklyView(prev => !prev)}
+            trackColor={{ false: colors.grayLight, true: colors.primary }}
+            thumbColor={showWeeklyView ? colors.secondary : colors.white}
+          />
+        </View>
 
-        />
+      {showWeeklyView ? (
+        <WeeklyCalendarView />
+      ) : (
+        <>
+          <FlatList
+            data={activities}
+            keyExtractor={(item) => item.nombre}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            renderItem={({ item }) => (
+              <ActivityCard item={item} onPress={handleActivitySelect} />
+            )}
+          />
+          <ReservationModal
+            visible={reservationModalVisible}
+            onClose={() => closeModal()}
+            selectedActivity={selectedActivity}
+            selectedDates={selectedDates}
+            selectedHorario={selectedHorario}
+            setSelectedHorario={setSelectedHorario}
+            handleDateChange={handleDateChange}
+            getCustomDatesStyles={getCustomDatesStyles}
+            diasSemana={diasSemana}
+            diasHabilitados={diasHabilitados}
+            fijados={fijados}
+            toggleDia={toggleDia}
+            handleConfirmPress={handleConfirmPress}
+            getTurnosByActivity={getTurnosByActivity}
+          />
+          <AlertModal
+            visible={inscriptionSuccessModalVisible}
+            onClose={closeInscriptionSuccessModal}
+            title={"¡Listo!"}
+            mensaje="¡Ya tenés tu turno reservado!"
+            pressableText="Ir a mis inscripciones"
+            action={goToInscriptions}
 
-        <AlertModal
-          visible={loginModalVisible}
-          onClose={closeLoginModal}
-          title={"¡Atencion!"}
-          mensaje="Para esta acción necesitás estar logueado."
-          pressableText="Loguearme"
-          action={goToLogin}
-        />
+          />
 
-        <AlertModal
-          visible={noTurnsModalVisible}
-          onClose={closeNoTurnsModal}
-          title="Sin turnos disponibles"
-          mensaje="No hay turnos disponibles para esta actividad desde hoy en adelante."
-        />
+          <AlertModal
+            visible={loginModalVisible}
+            onClose={closeLoginModal}
+            title={"¡Atencion!"}
+            mensaje="Para esta acción necesitás estar logueado."
+            pressableText="Loguearme"
+            action={goToLogin}
+          />
 
-
-      </View>
+          <AlertModal
+            visible={noTurnsModalVisible}
+            onClose={closeNoTurnsModal}
+            title="Sin turnos disponibles"
+            mensaje="No hay turnos disponibles para esta actividad desde hoy en adelante."
+          />
+        </>
+      )}
+    </View>
   );
 }
-
