@@ -19,6 +19,7 @@ export interface Turn {
 }
 
 export interface Registration {
+  turnId: number;
   activityName: string;
   startTime: string; 
 }
@@ -70,6 +71,7 @@ export interface Event {
   title: string;
   start: Date;
   end: Date;
+  disabled?:boolean
 }
 
 export interface AlertModalProps {
@@ -90,6 +92,7 @@ export interface Member {
   id: number;
   name: string;
   username: string;
+  registrations: Registration
 }
 
 export interface UserLogin {

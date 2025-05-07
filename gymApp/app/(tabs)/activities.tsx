@@ -12,6 +12,7 @@ import useColors from "@/theme/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import WeeklyCalendarView from "@/components/WeeklyCalendarView";
+import { Routes } from "../constants/routes";
 
 export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -31,7 +32,7 @@ export default function ActivitiesScreen() {
 
   const colors : AppColors = useColors()
 
-  const { token, member } = useAuth();
+  const { token, member, setMember } = useAuth();
 
   const router = useRouter();
 
@@ -45,8 +46,10 @@ export default function ActivitiesScreen() {
   ];
 
   useEffect(() => {
-    Api.getActivities()
-      .then((response) => {
+
+    const fetchActivities = async () => {
+      try {
+        const response = await Api.getActivities()
         const ActivityesConImagen: Activity[] = response.data.map((Activity: any) => ({
           id: Activity.id,
           nombre: Activity.name,
@@ -55,10 +58,11 @@ export default function ActivitiesScreen() {
         }));
         
         setActivities(ActivityesConImagen);
-      })
-      .catch((error) => {
+      } catch (error: any){
         console.error("Error al traer Activities:", error);
-      });
+      }
+    }
+    fetchActivities()
   }, []);
 
   const toggleDia = (dia: DiaSemana) => {
@@ -183,7 +187,8 @@ export default function ActivitiesScreen() {
       return;
     }
     try {
-      await Api.suscribe(suscriptionBody, token);
+      const response = await Api.suscribe(suscriptionBody, token);
+      setMember({ ...member, registrations: response.data });
       setInscriptionSuccessModalVisible(true);
     } catch (error) {
       Alert.alert("Error al suscribirse", JSON.stringify(error));
@@ -208,13 +213,13 @@ export default function ActivitiesScreen() {
   const goToInscriptions = () => {
       setInscriptionSuccessModalVisible(false)
       closeModal()
-      router.push("/(tabs)/enrollments")
+      router.push(Routes.Enrollments)
     }
 
   const goToLogin = () => {
     setLoginModalVisible(false)
     closeModal()
-    router.push("/login")
+    router.push(Routes.Login)
   }
 
   const closeLoginModal = () => {

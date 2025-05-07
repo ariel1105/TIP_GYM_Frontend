@@ -11,29 +11,34 @@ const WeeklyCalendarView: React.FC = () => {
   const [weekStart, setWeekStart] = useState(moment().startOf("isoWeek"));
   const [events, setEvents] = useState<Event[]>([]);
   const [userTurns, setUserTurns] = useState<number[]>([]);
-  const { member, token } = useAuth();
+  const { setMember, member, token } = useAuth();
   const colors = useColors();
 
   useEffect(() => {
     fetchWeeklyTurns();
     fetchUserTurns();
-  }, [weekStart]);
+  }, [weekStart, member]);
 
   const fetchWeeklyTurns = async () => {
     try {
       const response = await Api.getWeekTurns(weekStart.format("YYYY-MM-DD"));
-      const formattedEvents: Event[] = response.data.map((turno: Turn) => {
-        const start = new Date(turno.datetime);
+      const formattedEvents: Event[] = response.data.map((turn: Turn) => {
+        const start = new Date(turn.datetime);
         start.setHours(start.getHours() + 3);
         const end = new Date(start.getTime() + 60 * 60 * 1000);
-
+      
+        const isPast = start < new Date();
+        const isUserSubscribed = userTurns.includes(turn.id);
+        const isFull = turn.enrolled >= turn.capacity;
+      
         return {
-          id: turno.id.toString(),
-          title: turno.activityName,
+          id: turn.id.toString(),
+          title: turn.activityName,
           start,
           end,
+          disabled: isPast || isUserSubscribed || isFull,
         };
-      });
+      });      
       setEvents(formattedEvents);
     } catch (error) {
       console.error("Error al traer turnos semanales:", error);
@@ -62,7 +67,8 @@ const WeeklyCalendarView: React.FC = () => {
     }
 
     try {
-      await Api.suscribe({ turnIds: [turnId] }, token);
+      const response = await Api.suscribe({ turnIds: [turnId] }, token);
+      setMember({ ...member, registrations: response.data });
       setUserTurns((prev) => [...prev, turnId]);
       Alert.alert("¡Te inscribiste con éxito!");
     } catch (error) {
@@ -70,7 +76,12 @@ const WeeklyCalendarView: React.FC = () => {
     }
   };
 
-  const handleEventPress = (event: Event) => {
+  const handleEventPress = (event: Event & { disabled?: boolean }) => {
+    if (event.disabled) {
+      Alert.alert("Este turno no está disponible.");
+      return;
+    }
+  
     Alert.alert(
       "¿Querés inscribirte?",
       `${event.title} - ${moment(event.start).format("dddd HH:mm")}`,
@@ -79,7 +90,8 @@ const WeeklyCalendarView: React.FC = () => {
         { text: "Confirmar", onPress: () => handleSubscribe(Number(event.id)) },
       ]
     );
-  };
+  };  
+
 
   const styles = StyleSheet.create({
     container: {
@@ -137,9 +149,10 @@ const WeeklyCalendarView: React.FC = () => {
         showTime={false}
         swipeEnabled={false}
         onPressEvent={handleEventPress}
-        eventCellStyle={() => ({
-          backgroundColor: colors.primary,
+        eventCellStyle={(event) => ({
+          backgroundColor: event.disabled ? colors.disabledGray : colors.primary,
           borderRadius: 5,
+          opacity: event.disabled ? 0.6 : 1,
         })}
         eventCellTextColor={colors.black}
         theme={{

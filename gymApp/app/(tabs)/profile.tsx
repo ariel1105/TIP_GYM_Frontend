@@ -10,6 +10,8 @@ export default function Profile() {
   const router = useRouter();
   const colors = useColors();
   const { member } = useAuth();
+  const { logout } = useAuth();
+
 
   const memberName = member?.name;
 
@@ -58,6 +60,7 @@ export default function Profile() {
       paddingHorizontal: 24,
       borderRadius: 8,
       marginBottom: 20,
+      marginTop: 20
     },
     buttonText: {
       color: colors.black,
@@ -95,6 +98,11 @@ export default function Profile() {
       <TouchableOpacity style={styles.disabledButton} disabled>
         <Text style={styles.disabledText}>Editar perfil (próximamente)</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={logout}>
+        <Text style={styles.buttonText}>Cerrar sesión</Text>
+      </TouchableOpacity>
+
       <AlertModal
         visible={showLoginModal}
         onClose={() => {}}

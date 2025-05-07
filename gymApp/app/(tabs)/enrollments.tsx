@@ -17,13 +17,14 @@ export default function Enrollments() {
 
   useEffect(() => {
     if (!member) return;
-
-    Api.getRegistrations(token!)
-      .then((response: any) => {
+  
+    const fetchRegistrations = async () => {
+      try {
+        const response = await Api.getRegistrations(token!);
         const formattedEvents: Event[] = response.data.map((item: Registration) => {
           const start = new Date(item.startTime);
           start.setHours(start.getHours() + 3);
-          const end = new Date(start.getTime() + 60 * 60 * 1000); // Suponemos duracion de una hora
+          const end = new Date(start.getTime() + 60 * 60 * 1000); // Duración de una hora
           return {
             title: item.activityName,
             start,
@@ -31,11 +32,14 @@ export default function Enrollments() {
           };
         });
         setEvents(formattedEvents);
-      })
-      .catch((error: any) => {
+      } catch (error: any) {
         console.error('Error al obtener inscripciones:', error);
-      });
+      }
+    };
+  
+    fetchRegistrations();
   }, [member]);
+  
 
   const styles = StyleSheet.create({
     container: {

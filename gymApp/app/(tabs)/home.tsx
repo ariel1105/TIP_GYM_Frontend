@@ -19,6 +19,15 @@ export default function HomeScreen() {
       style={styles.background}
       resizeMode="cover"
     >
+      {!member && (
+        <TouchableOpacity
+          style={[styles.loginButton, { backgroundColor: colors.primary }]}
+          onPress={() => router.push(Routes.Login)}
+        >
+          <Text style={[styles.loginButtonText, { color: colors.onPrimary }]}>Login</Text>
+        </TouchableOpacity>
+      )}
+
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
         <Text style={[styles.greeting, { color: colors.text }]}>
           Hola, {member?.name || "Invitado"}!
@@ -91,4 +100,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "center",
   },
+  loginButton: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    zIndex: 10,
+  },
+  loginButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  
 });
