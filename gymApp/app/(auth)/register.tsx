@@ -3,6 +3,7 @@ import { useState } from "react";
 import { View, TextInput, Button, Text, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import useColors from "@/theme/useColors";
+import { Routes } from "../constants/routes";
 
 export default function Register() {
   const { register } = useAuth();
@@ -11,6 +12,45 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const router = useRouter();
   const colors = useColors();
+  const [errors, setErrors] = useState<{ name?: string; username?: string; password?: string; general?: string }>({});
+
+  const handleRegister = async () => {
+    const newErrors: typeof errors = {};
+  
+    if (!name) newErrors.name = "El nombre es obligatorio.";
+    if (!username) newErrors.username = "El nombre de usuario es obligatorio.";
+    if (!username) {
+      newErrors.username = "El nombre de usuario es obligatorio.";
+    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      newErrors.username = "El nombre de usuario solo puede contener letras, números y guiones bajos.";
+    }  
+    if (!password) {
+      newErrors.password = "La contraseña es obligatoria.";
+    } else if (password.length < 6) {
+      newErrors.password = "La contraseña debe tener al menos 6 caracteres.";
+    }
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+  
+    setErrors({});
+    try {
+      await register({ name, username, password });
+    } catch (err: any) {
+      const message = err.message;
+    
+      if (message.includes(`el usuario ${username} ya esta registrado`)) {
+        setErrors({ username: message });
+      } else {
+        setErrors({ general: message });
+      }
+    }
+  };
+  
+  
+  
 
   const styles = StyleSheet.create({
     container: {
@@ -33,12 +73,12 @@ export default function Register() {
       borderColor: colors.black,
       borderRadius: 8,
       backgroundColor: colors.cardBackground,
-      color: colors.text,
+      color: colors.black,
     },
     loginLink: {
       marginTop: 20,
       textAlign: "center",
-      color: colors.primary,
+      color: colors.text,
     },
     button: {
       paddingVertical: 10,
@@ -56,35 +96,48 @@ export default function Register() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Registro</Text>
+      <View>
+        <TextInput
+          placeholder="Nombre"
+          placeholderTextColor={colors.black}
+          value={name}
+          onChangeText={setName}
+          style={styles.input}
+        />
+        {errors.name && <Text style={{ color: "red", marginBottom: 10 }}>{errors.name}</Text>}
+      </View>
 
-      <TextInput
-        placeholder="Nombre"
-        placeholderTextColor={colors.black}
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Username"
-        placeholderTextColor={colors.black}
-        value={username}
-        onChangeText={setUsername}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Contraseña"
-        placeholderTextColor={colors.black}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-      />
+      <View>
+        <TextInput
+          placeholder="Username"
+          placeholderTextColor={colors.black}
+          value={username}
+          onChangeText={setUsername}
+          style={styles.input}
+        />
+        {errors.username && <Text style={{ color: "red", marginBottom: 10 }}>{errors.username}</Text>}
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => register({ name, username, password })}>
+      <View>
+        <TextInput
+          placeholder="Contraseña"
+          placeholderTextColor={colors.black}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          style={styles.input}
+        />
+        {errors.password && <Text style={{ color: "red", marginBottom: 10 }}>{errors.password}</Text>}
+      </View>
+
+      {errors.general && <Text style={{ color: "red", marginBottom: 10 }}>{errors.general}</Text>}
+
+
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Registrarse</Text>
       </TouchableOpacity>
 
-      <Pressable onPress={() => router.push("/login")}>
+      <Pressable onPress={() => router.push(Routes.Login)}>
         <Text style={styles.loginLink}>
           ¿Ya tenés una cuenta? Iniciá sesión
         </Text>

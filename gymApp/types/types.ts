@@ -19,6 +19,7 @@ export interface Turn {
 }
 
 export interface Registration {
+  turnId: number;
   activityName: string;
   startTime: string; 
 }
@@ -65,13 +66,21 @@ export interface ScheduleSelectorProps {
     getTurnosByActivity: (activityName: string) => Turn[];
 }
 
+export interface Event {
+  id?: number;
+  title: string;
+  start: Date;
+  end: Date;
+  disabled?:boolean
+}
+
 export interface AlertModalProps {
   visible: boolean;
   onClose: () => void;
   title: string;
   mensaje?: string;
   action? : () => void;
-  pressableText?: string;
+  actionButton?: string;
   hideCloseButton?: boolean;
 }
 
@@ -83,6 +92,7 @@ export interface Member {
   id: number;
   name: string;
   username: string;
+  registrations: Registration
 }
 
 export interface UserLogin {

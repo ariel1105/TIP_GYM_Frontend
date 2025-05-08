@@ -1,13 +1,12 @@
-// context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { router, useRouter } from "expo-router";
 import Api from "@/services/Api";
 import { Member, UserLogin, UserRegister } from "@/types/types";
 import { Routes } from "@/app/constants/routes";
-import { Alert } from "react-native";
 
 type AuthContextType = {
+  setMember: any
   member: Member | null
   token: string | null;
   login: (user: UserLogin) => Promise<void>;
@@ -27,7 +26,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const storedToken = await SecureStore.getItemAsync("token");
       if (storedToken) {
         setToken(storedToken);
-        // ppdemos tener funcion getCurrentMember para obtener el usuario actual
       }
     };
     loadToken();
@@ -35,37 +33,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
  
 
-const login = async ({ username, password }: UserLogin) => {
-  try {
-    const response = await Api.login({ username, password });
-    const token = response.data;
-    setToken(token);
-    await SecureStore.setItemAsync("token", token);
-
-    const memberResponse = await Api.getMemberByUsername(username, token);
-    setMember(memberResponse.data);
-
-    Alert.alert("Redirigiendo a Home...");
-    router.push("/home");
-  } catch (error) {
-    console.error(error)
-  }
-};
-
+  const login = async ({ username, password }: UserLogin) => {
+    try {
+      const response = await Api.login({ username, password });
+      const token = response.data;
+      setToken(token);
+      await SecureStore.setItemAsync("token", token);
+  
+      const memberResponse = await Api.getMember(token);
+      setMember(memberResponse.data);
+  
+      router.push(Routes.Home);
+    } catch (error: any) {
+      const errorMessage = error.response?.data || "Usuario o contraseña incorrectos";
+      throw new Error(errorMessage);
+    }
+  };
+  
   const register = async (userData: UserRegister) => {
-    try {const response = await Api.register(userData);
+    try {
+      const response = await Api.register(userData);
       const token = response.data;
       setToken(token);
       await SecureStore.setItemAsync("token", token);
 
-      const memberResponse = await Api.getMemberByUsername(userData.username, token);
+      const memberResponse = await Api.getMember(token);
       setMember(memberResponse.data);
 
-      router.push(Routes.Home)} 
-    catch(error) {
-      console.error(error)
+      router.push(Routes.Home);
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data);
+      } else {
+        throw new Error("Ocurrió un error al registrarse");
+      }
     }
   };
+
 
   const logout = async () => {
     setToken(null);
@@ -75,7 +79,7 @@ const login = async ({ username, password }: UserLogin) => {
   };
 
   return (
-    <AuthContext.Provider value={{ member, token, login, register, logout }}>
+    <AuthContext.Provider value={{ member, setMember, token, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

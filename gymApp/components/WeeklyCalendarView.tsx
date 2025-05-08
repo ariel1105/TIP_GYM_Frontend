@@ -1,0 +1,203 @@
+import React, { useEffect, useState } from "react";
+import { View, Text, Alert, Button, StyleSheet, TouchableOpacity } from "react-native";
+import { Calendar } from "react-native-big-calendar";
+import moment from "moment";
+import Api from "@/services/Api";
+import { useAuth } from "@/context/AuthContext";
+import useColors from "@/theme/useColors";
+import { Turn, Event } from "@/types/types";
+import AlertModal from "./AlertModal";
+import { router } from "expo-router";
+import { Routes } from "@/app/constants/routes";
+
+const WeeklyCalendarView: React.FC = () => {
+  const [weekStart, setWeekStart] = useState(moment().startOf("isoWeek"));
+  const [events, setEvents] = useState<Event[]>([]);
+  const [userTurns, setUserTurns] = useState<number[]>([]);
+  const { setMember, member, token } = useAuth();
+  const colors = useColors();
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalProps, setModalProps] = useState({
+    title: "",
+    mensaje: "",
+    action: () => {},
+    actionButton: "",
+    hideCloseButton: false
+  });
+
+  useEffect(() => {
+    fetchWeeklyTurns();
+    fetchUserTurns();
+  }, [weekStart, member]);
+
+  const fetchWeeklyTurns = async () => {
+    try {
+      const response = await Api.getWeekTurns(weekStart.format("YYYY-MM-DD"));
+      const formattedEvents: Event[] = response.data.map((turn: Turn) => {
+        const start = new Date(turn.datetime);
+        start.setHours(start.getHours() + 3);
+        const end = new Date(start.getTime() + 60 * 60 * 1000);
+      
+        const isPast = start < new Date();
+        const isUserSubscribed = userTurns.includes(turn.id);
+        const isFull = turn.enrolled >= turn.capacity;
+      
+        return {
+          id: turn.id.toString(),
+          title: turn.activityName,
+          start,
+          end,
+          disabled: isPast || isUserSubscribed || isFull,
+        };
+      });      
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error("Error al traer turnos semanales:", error);
+    }
+  };
+
+  const fetchUserTurns = async () => {
+    if (!member || !token) return;
+    try {
+      const response = await Api.getMember(token);
+      const turns = response.data.turns
+      setUserTurns(turns);
+    } catch (error) {
+      console.error("Error al obtener los turnos del usuario:", error);
+    }
+  };
+
+  const handleSubscribe = async (turnId: number) => {
+    if (!member || !token) {
+      openModal("Atención", "Necesitás estar logueado para inscribirte.", () => router.push(Routes.Login), "Loguearme", false);      
+      return;
+    }
+    if (userTurns.includes(turnId)) {
+      openModal("Atención", "Ya estás inscrito en este turno", () => setModalVisible(false), "Cerrar", true);
+      return;
+    }
+
+    try {
+      const response = await Api.suscribe({ turnIds: [turnId] }, token);
+      setMember({ ...member, registrations: response.data });
+      setUserTurns((prev) => [...prev, turnId]);
+      openModal("Éxito", "¡Te inscribiste con éxito!", () => setModalVisible(false), "Cerrar", true);
+    } catch (error) {
+      openModal("Error", "Error al suscribirse", () => setModalVisible(false), "Cerrar", true);
+    }
+  };
+
+  const handleEventPress = (event: Event & { disabled?: boolean }) => {
+    if (event.disabled) {
+      openModal("Turno no disponible", "Este turno no está disponible.", () => setModalVisible(false), "Cerrar", true);
+      return;
+    }
+  
+    openModal(
+      "Inscripción",
+      `${event.title} - ${moment(event.start).format("dddd HH:mm")}`,
+      () => handleSubscribe(Number(event.id)),
+      "Confirmar",
+      false
+    );
+  };
+  
+  const openModal = (title: string, mensaje: string, action: () => void, actionButton: string, hideCloseButton: boolean) => {
+    setModalProps({ title, mensaje, action, actionButton, hideCloseButton });
+    setModalVisible(true);
+  };
+
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 10,
+    },
+    header: {
+      marginBottom: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    button: {
+      paddingHorizontal: 15,
+      paddingVertical: 10,
+      borderRadius: 5,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    buttonText: {
+      fontWeight: "bold",
+      fontSize: 18,
+      color: colors.black,
+    },
+  });
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: colors.primary }]}
+          onPress={() => setWeekStart((prev) => moment(prev).subtract(1, "week"))}
+        >
+          <Text style={[styles.buttonText, { color: "black" }]}>←</Text>
+        </TouchableOpacity>
+
+        <Text style={{ alignSelf: "center", color: colors.text }}>
+          Semana del {weekStart.format("DD/MM/YYYY")}
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: colors.primary }]}
+          onPress={() => setWeekStart((prev) => moment(prev).add(1, "week"))}
+        >
+          <Text style={[styles.buttonText, { color: "black" }]}>→</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Calendar
+        date={weekStart.toDate()}
+        events={events}
+        height={600}
+        mode="week"
+        locale="es-AR"
+        weekStartsOn={1}
+        showTime={false}
+        swipeEnabled={false}
+        onPressEvent={handleEventPress}
+        eventCellStyle={(event) => ({
+          backgroundColor: event.disabled ? colors.disabledGray : colors.primary,
+          borderRadius: 5,
+          opacity: event.disabled ? 0.6 : 1,
+        })}
+        eventCellTextColor={colors.black}
+        theme={{
+          palette: {
+            primary: {
+              main: colors.primary,
+              contrastText: colors.black,
+            },
+            gray: {
+              "200": colors.text,
+              "500": colors.text,
+              "800": colors.text,
+            },
+            nowIndicator: "#FF0000",
+            moreLabel: colors.black,
+          },
+        }}
+      />
+      <AlertModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        title={modalProps.title}
+        mensaje={modalProps.mensaje}
+        action={modalProps.action}
+        actionButton={modalProps.actionButton}
+        hideCloseButton={modalProps.hideCloseButton}
+      />
+    </View>
+  );
+};
+
+export default WeeklyCalendarView;

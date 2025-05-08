@@ -6,13 +6,7 @@ import { Registration } from '@/types/types';
 import {darkColors} from '@/theme/colors';
 import useColors from '@/theme/useColors';
 import { useAuth } from '@/context/AuthContext';
-
-
-interface Event {
-  title: string;
-  start: Date;
-  end: Date;
-}
+import { Event } from '@/types/types';
 
 export default function Enrollments() {
   const [events, setEvents] = useState<Event[]>([])
@@ -22,14 +16,15 @@ export default function Enrollments() {
   const { member, token } = useAuth();
 
   useEffect(() => {
-    if (!member?.id) return;
-
-    Api.getRegistrations(member.id, token!)
-      .then((response: any) => {
+    if (!member) return;
+  
+    const fetchRegistrations = async () => {
+      try {
+        const response = await Api.getRegistrations(token!);
         const formattedEvents: Event[] = response.data.map((item: Registration) => {
           const start = new Date(item.startTime);
           start.setHours(start.getHours() + 3);
-          const end = new Date(start.getTime() + 60 * 60 * 1000); // Suponemos duracion de una hora
+          const end = new Date(start.getTime() + 60 * 60 * 1000); // Duración de una hora
           return {
             title: item.activityName,
             start,
@@ -37,11 +32,14 @@ export default function Enrollments() {
           };
         });
         setEvents(formattedEvents);
-      })
-      .catch((error: any) => {
+      } catch (error: any) {
         console.error('Error al obtener inscripciones:', error);
-      });
-  }, [member?.id]);
+      }
+    };
+  
+    fetchRegistrations();
+  }, [member]);
+  
 
   const styles = StyleSheet.create({
     container: {

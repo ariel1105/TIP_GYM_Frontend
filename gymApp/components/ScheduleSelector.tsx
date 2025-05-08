@@ -21,9 +21,9 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
   useEffect(() => {
     const fetchMemberTurns = async () => {
       try {
-        if (!member?.id) return
+        if (!member) return
 
-        const response = await Api.getMember(member.id, token!);
+        const response = await Api.getMember(token!);
         setMemberTurns(response.data.turns || []);
       } catch (error) {
         console.error("Error al obtener los turnos del miembro:", error);
@@ -31,7 +31,7 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
     };
 
     fetchMemberTurns();
-  }, [member?.id]);
+  }, [member]);
 
   const horarios = getTurnosByActivity(selectedActivity.nombre)
     .filter((turno) =>

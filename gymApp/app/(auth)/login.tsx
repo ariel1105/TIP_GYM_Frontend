@@ -3,6 +3,7 @@ import { useState } from "react";
 import { View, TextInput, Button, Text, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import useColors from "@/theme/useColors";
+import { Routes } from "../constants/routes";
 
 export default function Login() {
   const { login } = useAuth();
@@ -10,6 +11,23 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const router = useRouter();
   const colors = useColors();
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    if (!username || !password) {
+      setError("Completa todos los campos.");
+      return;
+    }
+  
+    setError("");
+  
+    try {
+      await login({ username, password });
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+  
 
   const styles = StyleSheet.create({
     container: {
@@ -37,7 +55,7 @@ export default function Login() {
     registerLink: {
       marginTop: 20,
       textAlign: "center",
-      color: colors.primary,
+      color: colors.text,
     },
     button: {
       paddingVertical: 10,
@@ -71,16 +89,17 @@ export default function Login() {
         onChangeText={setPassword}
         style={styles.input}
       />
-      <TouchableOpacity style={styles.button} onPress={() => login({ username, password })}>
+      {error !== "" && <Text style={{ color: "red", marginBottom: 10 }}>{error}</Text>}
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      <Pressable  onPress={() => router.push("/register")}>
+      <Pressable  onPress={() => router.push(Routes.Register)}>
         <Text style={styles.registerLink}>
           ¿No tenés una cuenta? Registrate acá
         </Text>
       </Pressable>
-      <Pressable  onPress={() => router.push("/home")}>
+      <Pressable  onPress={() => router.push(Routes.Home)}>
         <Text style={styles.registerLink}>
           Continuar sin una cuenta
         </Text>
