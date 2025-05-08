@@ -3,7 +3,7 @@ import { Modal, View, Text, StyleSheet, TouchableOpacity, Pressable } from "reac
 import { AlertModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
 
-const AlertModal = ({ visible, onClose, title, mensaje, action, pressableText, hideCloseButton}: AlertModalProps) => {
+const AlertModal = ({ visible, onClose, title, mensaje, action, actionButton, hideCloseButton}: AlertModalProps) => {
 
   const colors = useColors()
 
@@ -37,20 +37,25 @@ const AlertModal = ({ visible, onClose, title, mensaje, action, pressableText, h
       marginBottom: 20,
       color: colors.black,
     },
+    buttonContainer: {
+      flexDirection: "row",
+      justifyContent: hideCloseButton ? "center" : "space-between",
+      width: "100%",
+      marginTop: 20,
+    },
     button: {
       paddingVertical: 10,
       paddingHorizontal: 30,
       borderRadius: 10,
       backgroundColor: colors.primary,
+      marginHorizontal: hideCloseButton ? 0 : 5,
     },
     buttonText: {
       fontWeight: "bold",
       color: colors.onPrimary,
-    },
-    pressableText: {
-      marginTop: 20,
       textAlign: "center",
-      color: colors.black,
+      flexWrap: "wrap",
+      width: "100%"
     },
   });
   
@@ -60,16 +65,16 @@ const AlertModal = ({ visible, onClose, title, mensaje, action, pressableText, h
         <View style={styles.container}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{mensaje}</Text>
-          {!hideCloseButton && (
-            <TouchableOpacity style={styles.button} onPress={onClose}>
-              <Text style={styles.buttonText}>Cerrar</Text>
+          <View style={styles.buttonContainer}>
+            {!hideCloseButton && (
+              <TouchableOpacity style={styles.button} onPress={onClose}>
+                <Text style={styles.buttonText}>Cerrar</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.button} onPress={action}>
+              <Text style={styles.buttonText}>{actionButton}</Text>
             </TouchableOpacity>
-          )}
-          <Pressable  onPress={action}>
-            <Text style={styles.pressableText}>
-              {pressableText}
-            </Text>
-          </Pressable>
+          </View>
         </View>
       </View>
     </Modal>

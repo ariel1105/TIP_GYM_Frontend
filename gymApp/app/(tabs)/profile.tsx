@@ -109,7 +109,7 @@ export default function Profile() {
         title="No estás logueado"
         mensaje="Por favor, iniciá sesión para continuar."
         action={() => router.replace('/login')}
-        pressableText="Ir al login"
+        actionButton="Ir al login"
         hideCloseButton
       />
     </View>

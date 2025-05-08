@@ -78,7 +78,7 @@ export default function Register() {
     loginLink: {
       marginTop: 20,
       textAlign: "center",
-      color: colors.primary,
+      color: colors.text,
     },
     button: {
       paddingVertical: 10,

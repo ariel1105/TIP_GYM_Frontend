@@ -80,7 +80,7 @@ export interface AlertModalProps {
   title: string;
   mensaje?: string;
   action? : () => void;
-  pressableText?: string;
+  actionButton?: string;
   hideCloseButton?: boolean;
 }
 

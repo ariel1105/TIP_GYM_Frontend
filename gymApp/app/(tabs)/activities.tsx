@@ -314,9 +314,8 @@ export default function ActivitiesScreen() {
             onClose={closeInscriptionSuccessModal}
             title={"¡Listo!"}
             mensaje="¡Ya tenés tu turno reservado!"
-            pressableText="Ir a mis inscripciones"
+            actionButton="Ver inscripción"
             action={goToInscriptions}
-
           />
 
           <AlertModal
@@ -324,7 +323,7 @@ export default function ActivitiesScreen() {
             onClose={closeLoginModal}
             title={"¡Atencion!"}
             mensaje="Para esta acción necesitás estar logueado."
-            pressableText="Loguearme"
+            actionButton="Loguearme"
             action={goToLogin}
           />
 
