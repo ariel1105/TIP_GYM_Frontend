@@ -92,7 +92,8 @@ export interface Member {
   id: number;
   name: string;
   username: string;
-  registrations: Registration[]
+  registrations: Registration[];
+  turns: number[]
 }
 
 export interface UserLogin {
