@@ -1,6 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
-import { View, TextInput, Button, Text, Pressable, StyleSheet, TouchableOpacity } from "react-native";
+import { View, TextInput, Button, Text, Pressable, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import useColors from "@/theme/useColors";
 import { Routes } from "../constants/routes";
@@ -18,9 +18,7 @@ export default function Login() {
       setError("Completa todos los campos.");
       return;
     }
-  
-    setError("");
-  
+
     try {
       await login({ username, password });
     } catch (err: any) {

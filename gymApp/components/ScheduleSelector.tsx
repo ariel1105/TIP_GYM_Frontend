@@ -1,7 +1,7 @@
 import { ScheduleSelectorProps, Turn } from "@/types/types";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import Api from "@/services/Api";
 import useColors from "@/theme/useColors";
 import { useAuth } from "@/context/AuthContext";
@@ -25,8 +25,8 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
 
         const response = await Api.getMember(token!);
         setMemberTurns(response.data.turns || []);
-      } catch (error) {
-        console.error("Error al obtener los turnos del miembro:", error);
+      } catch (error: any) {
+        Alert.alert("Error al obtener turnos del miembro", JSON.stringify(error.message));
       }
     };
 

@@ -59,7 +59,7 @@ export default function ActivitiesScreen() {
         
         setActivities(ActivityesConImagen);
       } catch (error: any){
-        console.error("Error al traer Activities:", error);
+        Alert.alert("Error al obtener actividades", JSON.stringify(error.message));
       }
     }
     fetchActivities()
@@ -190,9 +190,8 @@ export default function ActivitiesScreen() {
       const response = await Api.suscribe(suscriptionBody, token);
       setMember({ ...member, registrations: response.data });
       setInscriptionSuccessModalVisible(true);
-    } catch (error) {
-      Alert.alert("Error al suscribirse", JSON.stringify(error));
-      console.error("Error al suscribirse:", error);
+    } catch (error: any) {
+      Alert.alert("Error al suscribirse", JSON.stringify(error.message));
     }
   };
   
@@ -312,6 +311,7 @@ export default function ActivitiesScreen() {
           <AlertModal
             visible={inscriptionSuccessModalVisible}
             onClose={closeInscriptionSuccessModal}
+            closeButton="Cerrar"
             title={"¡Listo!"}
             mensaje="¡Ya tenés tu turno reservado!"
             actionButton="Ver inscripción"
@@ -321,6 +321,7 @@ export default function ActivitiesScreen() {
           <AlertModal
             visible={loginModalVisible}
             onClose={closeLoginModal}
+            closeButton="Cerrar"
             title={"¡Atencion!"}
             mensaje="Para esta acción necesitás estar logueado."
             actionButton="Loguearme"
@@ -330,6 +331,7 @@ export default function ActivitiesScreen() {
           <AlertModal
             visible={noTurnsModalVisible}
             onClose={closeNoTurnsModal}
+            closeButton="Cerrar"
             title="Sin turnos disponibles"
             mensaje="No hay turnos disponibles para esta actividad desde hoy en adelante."
           />
