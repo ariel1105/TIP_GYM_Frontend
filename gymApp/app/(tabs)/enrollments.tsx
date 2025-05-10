@@ -1,23 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
 import Api from '@/services/Api';
 import { Registration } from '@/types/types';
-import {darkColors} from '@/theme/colors';
 import useColors from '@/theme/useColors';
 import { useAuth } from '@/context/AuthContext';
 import { Event } from '@/types/types';
+import AlertModal from '@/components/AlertModal';
+import moment from 'moment';
 
 export default function Enrollments() {
   const [events, setEvents] = useState<Event[]>([])
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const colors = useColors()
-
-  const { member, token } = useAuth();
+  const { member, setMember, token } = useAuth();
 
   useEffect(() => {
     if (!member) return;
-  
+    
     const fetchRegistrations = async () => {
       try {
         const response = await Api.getRegistrations(token!);
@@ -26,6 +29,7 @@ export default function Enrollments() {
           start.setHours(start.getHours() + 3);
           const end = new Date(start.getTime() + 60 * 60 * 1000); // Duración de una hora
           return {
+            id: item.turnId.toString(),
             title: item.activityName,
             start,
             end,
@@ -33,12 +37,45 @@ export default function Enrollments() {
         });
         setEvents(formattedEvents);
       } catch (error: any) {
-        console.error('Error al obtener inscripciones:', error);
+        Alert.alert("Error al obtener inscripciones", JSON.stringify(error.message));
       }
     };
   
     fetchRegistrations();
   }, [member]);
+
+  const handleEventPress = (event: Event) => {
+    setSelectedEvent(event);
+    setModalVisible(true);
+  };
+
+  const handleCancelEnrollment = async () => {
+    if (selectedEvent && selectedEvent.id) {
+      try {
+
+        await Api.unsubscribe(selectedEvent.id, token!!);
+
+        
+        const updatedTurns = member!!.turns.filter(
+          (item: number) => item != selectedEvent.id
+        );
+        await setMember({ ...member, turns: updatedTurns });
+        setModalVisible(false);
+      } catch (error) {
+        setModalVisible(false)
+        setSelectedEvent(null);
+        setErrorModalVisible(true);
+      }
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
+  const handleCloseErrorModal = () => {
+    setErrorModalVisible(false)
+  };
   
 
   const styles = StyleSheet.create({
@@ -92,8 +129,27 @@ export default function Enrollments() {
               moreLabel: colors.black,
             },
           }}
+          onPressEvent={handleEventPress}
         />
       </View>
+      <AlertModal
+        visible={modalVisible}
+        onClose={handleCloseModal}
+        closeButton='Cerrar'
+        title="Tu Turno"
+        mensaje={`Actividad: ${selectedEvent?.title}\nFecha: ${moment(selectedEvent?.start).format('DD/MM/YYYY HH:mm')}`}
+        action={handleCancelEnrollment}
+        actionButton="Cancelar turno"
+      />
+
+      <AlertModal
+        visible={errorModalVisible}
+        onClose={handleCloseErrorModal}
+        closeButton='Cerrar'
+        title="Error"
+        mensaje="Ya pasó el tiempo límite para la cancelación del turno."
+      />
+
     </View>
   );
 }

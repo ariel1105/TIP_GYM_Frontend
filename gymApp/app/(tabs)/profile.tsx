@@ -105,12 +105,10 @@ export default function Profile() {
 
       <AlertModal
         visible={showLoginModal}
-        onClose={() => {}}
+        onClose={() => router.replace('/login')}
+        closeButton='Ir a login'
         title="No estás logueado"
         mensaje="Por favor, iniciá sesión para continuar."
-        action={() => router.replace('/login')}
-        actionButton="Ir al login"
-        hideCloseButton
       />
     </View>
   );

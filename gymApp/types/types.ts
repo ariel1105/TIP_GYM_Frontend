@@ -77,11 +77,11 @@ export interface Event {
 export interface AlertModalProps {
   visible: boolean;
   onClose: () => void;
+  closeButton: string;
   title: string;
   mensaje?: string;
   action? : () => void;
   actionButton?: string;
-  hideCloseButton?: boolean;
 }
 
 export interface Suscriptions {
@@ -92,7 +92,8 @@ export interface Member {
   id: number;
   name: string;
   username: string;
-  registrations: Registration
+  registrations: Registration[];
+  turns: number[]
 }
 
 export interface UserLogin {

@@ -2,7 +2,7 @@ import { Suscriptions } from '@/types/types';
 import Axios from 'axios';
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-export const API_BASE_URL = "http://192.168.1.44:8080/";
+export const API_BASE_URL = "http://192.168.0.33:8080/";
 
 const axiosInstance = Axios.create({
     baseURL: API_BASE_URL,
@@ -17,9 +17,14 @@ const get = (url: any, header?: any) =>
 const post = (url: any, body: any, header?:any) => 
     axiosInstance.post(url, body, header)
         .then((response) => response)
-        .catch((error) => Promise.reject(error.response.data))
+        .catch((error) => Promise.reject(error))
         
-  
+const del = (url: any, header?: any) => 
+    axiosInstance.delete(url, header)
+        .then((response) => response)
+        .catch((error) => Promise.reject(error))
+
+
 const getActivities = () => {
     return get(`${API_BASE_URL}activities`);
 };
@@ -51,6 +56,12 @@ const suscribe = async (body : Suscriptions, token: string) => {
    });
 }
 
+const unsubscribe = async (turnId: number, token: string) => {
+    return del(`${API_BASE_URL}member/unsubscribe/${turnId}`, {
+        headers: { "Authorization": `Bearer ${token}`} 
+   });
+}
+
 const login = async (body: { username: string; password: string }) => {
     return post(`${API_BASE_URL}login`, body); 
 };
@@ -70,6 +81,7 @@ const Api = {
     getRegistrations,
     getMember,
     suscribe,
+    unsubscribe,
     login,
     register
 }

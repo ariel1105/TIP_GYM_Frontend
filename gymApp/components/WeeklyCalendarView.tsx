@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback  } from "react";
 import { View, Text, Alert, Button, StyleSheet, TouchableOpacity } from "react-native";
 import { Calendar } from "react-native-big-calendar";
 import moment from "moment";
@@ -9,28 +9,39 @@ import { Turn, Event } from "@/types/types";
 import AlertModal from "./AlertModal";
 import { router } from "expo-router";
 import { Routes } from "@/app/constants/routes";
+import { useFocusEffect } from '@react-navigation/native';
 
 const WeeklyCalendarView: React.FC = () => {
   const [weekStart, setWeekStart] = useState(moment().startOf("isoWeek"));
   const [events, setEvents] = useState<Event[]>([]);
-  const [userTurns, setUserTurns] = useState<number[]>([]);
   const { setMember, member, token } = useAuth();
   const colors = useColors();
+  const [userTurns, setUserTurns] = useState<number[]>([]);
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [render, setRender] = useState(false);
   const [modalProps, setModalProps] = useState({
     title: "",
     mensaje: "",
     action: () => {},
     actionButton: "",
-    hideCloseButton: false
+    closeButton: "Cerrar",
   });
 
-  useEffect(() => {
-    fetchWeeklyTurns();
-    fetchUserTurns();
-  }, [weekStart, member]);
+      const runSequentially = async () => {
+      
+      await fetchUserTurns();   
+      await fetchWeeklyTurns(); 
+    };
 
+  useFocusEffect(
+    useCallback(() => {
+      runSequentially()
+      return () => {
+
+      };
+    }, [weekStart, member, userTurns])
+  );
   const fetchWeeklyTurns = async () => {
     try {
       const response = await Api.getWeekTurns(weekStart.format("YYYY-MM-DD"));
@@ -42,7 +53,7 @@ const WeeklyCalendarView: React.FC = () => {
         const isPast = start < new Date();
         const isUserSubscribed = userTurns.includes(turn.id);
         const isFull = turn.enrolled >= turn.capacity;
-      
+        
         return {
           id: turn.id.toString(),
           title: turn.activityName,
@@ -52,59 +63,55 @@ const WeeklyCalendarView: React.FC = () => {
         };
       });      
       setEvents(formattedEvents);
-    } catch (error) {
-      console.error("Error al traer turnos semanales:", error);
+    } catch (error: any) {
+      Alert.alert("Error al obtener turnos semanales", JSON.stringify(error.message));
     }
   };
 
   const fetchUserTurns = async () => {
-    if (!member || !token) return;
-    try {
-      const response = await Api.getMember(token);
-      const turns = response.data.turns
-      setUserTurns(turns);
-    } catch (error) {
-      console.error("Error al obtener los turnos del usuario:", error);
-    }
+    if(member) {setUserTurns(member.turns)}
   };
 
   const handleSubscribe = async (turnId: number) => {
     if (!member || !token) {
-      openModal("Atención", "Necesitás estar logueado para inscribirte.", () => router.push(Routes.Login), "Loguearme", false);      
+      openModal("Atención", "Necesitás estar logueado para inscribirte.", () => router.push(Routes.Login), "Loguearme");
       return;
     }
     if (userTurns.includes(turnId)) {
-      openModal("Atención", "Ya estás inscrito en este turno", () => setModalVisible(false), "Cerrar", true);
+      openModal("Atención", "Ya estás inscrito en este turno", () => setModalVisible(false));
       return;
     }
-
     try {
-      const response = await Api.suscribe({ turnIds: [turnId] }, token);
-      setMember({ ...member, registrations: response.data });
+      await Api.suscribe({ turnIds: [turnId] }, token);
+      setMember({ ...member, turns: [...member.turns, turnId], });
       setUserTurns((prev) => [...prev, turnId]);
-      openModal("Éxito", "¡Te inscribiste con éxito!", () => setModalVisible(false), "Cerrar", true);
+      openModal("Éxito", "¡Te inscribiste con éxito!", () => setModalVisible(false));
     } catch (error) {
-      openModal("Error", "Error al suscribirse", () => setModalVisible(false), "Cerrar", true);
+      openModal("Error", "Error al suscribirse", () => setModalVisible(false));
     }
   };
 
   const handleEventPress = (event: Event & { disabled?: boolean }) => {
     if (event.disabled) {
-      openModal("Turno no disponible", "Este turno no está disponible.", () => setModalVisible(false), "Cerrar", true);
+      openModal("Turno no disponible", "Este turno no está disponible.", () => setModalVisible(false));
       return;
     }
-  
     openModal(
       "Inscripción",
       `${event.title} - ${moment(event.start).format("dddd HH:mm")}`,
       () => handleSubscribe(Number(event.id)),
-      "Confirmar",
-      false
+      "Confirmar"
     );
   };
   
-  const openModal = (title: string, mensaje: string, action: () => void, actionButton: string, hideCloseButton: boolean) => {
-    setModalProps({ title, mensaje, action, actionButton, hideCloseButton });
+  const openModal = (
+    title: string,
+    mensaje: string,
+    action: () => void,
+    actionButton: string = "",
+    closeButton: string = "Cerrar"
+  ) => {
+    setModalProps({ title, mensaje, action, actionButton, closeButton });
     setModalVisible(true);
   };
 
@@ -194,7 +201,7 @@ const WeeklyCalendarView: React.FC = () => {
         mensaje={modalProps.mensaje}
         action={modalProps.action}
         actionButton={modalProps.actionButton}
-        hideCloseButton={modalProps.hideCloseButton}
+        closeButton={modalProps.closeButton}
       />
     </View>
   );
