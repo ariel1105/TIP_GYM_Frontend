@@ -188,7 +188,7 @@ export default function ActivitiesScreen() {
     }
     try {
       const response = await Api.suscribe(suscriptionBody, token);
-      setMember({ ...member, registrations: response.data });
+      setMember({ ...member, turns: [...member.turns, ...selectedTurnIds] });
       setInscriptionSuccessModalVisible(true);
     } catch (error: any) {
       Alert.alert("Error al suscribirse", JSON.stringify(error.message));

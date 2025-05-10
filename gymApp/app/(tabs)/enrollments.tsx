@@ -20,7 +20,7 @@ export default function Enrollments() {
 
   useEffect(() => {
     if (!member) return;
-  
+    
     const fetchRegistrations = async () => {
       try {
         const response = await Api.getRegistrations(token!);
@@ -52,8 +52,14 @@ export default function Enrollments() {
   const handleCancelEnrollment = async () => {
     if (selectedEvent && selectedEvent.id) {
       try {
-        const response = await Api.unsubscribe(selectedEvent.id, token!!);
-        setMember({ ...member, registrations: response.data });
+
+        await Api.unsubscribe(selectedEvent.id, token!!);
+
+        
+        const updatedTurns = member!!.turns.filter(
+          (item: number) => item != selectedEvent.id
+        );
+        await setMember({ ...member, turns: updatedTurns });
         setModalVisible(false);
       } catch (error) {
         setModalVisible(false)

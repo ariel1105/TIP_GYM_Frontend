@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const memberResponse = await Api.getMember(token);
     setMember(memberResponse.data);
-
+    
     router.push(Routes.Home);
   } catch (error: any) {
     if (!error.response) {

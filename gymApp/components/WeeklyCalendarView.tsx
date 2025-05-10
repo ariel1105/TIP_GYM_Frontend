@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback  } from "react";
 import { View, Text, Alert, Button, StyleSheet, TouchableOpacity } from "react-native";
 import { Calendar } from "react-native-big-calendar";
 import moment from "moment";
@@ -9,15 +9,17 @@ import { Turn, Event } from "@/types/types";
 import AlertModal from "./AlertModal";
 import { router } from "expo-router";
 import { Routes } from "@/app/constants/routes";
+import { useFocusEffect } from '@react-navigation/native';
 
 const WeeklyCalendarView: React.FC = () => {
   const [weekStart, setWeekStart] = useState(moment().startOf("isoWeek"));
   const [events, setEvents] = useState<Event[]>([]);
-  const [userTurns, setUserTurns] = useState<number[]>([]);
   const { setMember, member, token } = useAuth();
   const colors = useColors();
+  const [userTurns, setUserTurns] = useState<number[]>([]);
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [render, setRender] = useState(false);
   const [modalProps, setModalProps] = useState({
     title: "",
     mensaje: "",
@@ -26,11 +28,20 @@ const WeeklyCalendarView: React.FC = () => {
     closeButton: "Cerrar",
   });
 
-  useEffect(() => {
-    fetchWeeklyTurns();
-    fetchUserTurns();
-  }, [weekStart, member]);
+      const runSequentially = async () => {
+      
+      await fetchUserTurns();   
+      await fetchWeeklyTurns(); 
+    };
 
+  useFocusEffect(
+    useCallback(() => {
+      runSequentially()
+      return () => {
+
+      };
+    }, [weekStart, member, userTurns])
+  );
   const fetchWeeklyTurns = async () => {
     try {
       const response = await Api.getWeekTurns(weekStart.format("YYYY-MM-DD"));
@@ -42,7 +53,7 @@ const WeeklyCalendarView: React.FC = () => {
         const isPast = start < new Date();
         const isUserSubscribed = userTurns.includes(turn.id);
         const isFull = turn.enrolled >= turn.capacity;
-      
+        
         return {
           id: turn.id.toString(),
           title: turn.activityName,
@@ -58,14 +69,7 @@ const WeeklyCalendarView: React.FC = () => {
   };
 
   const fetchUserTurns = async () => {
-    if (!member || !token) return;
-    try {
-      const response = await Api.getMember(token);
-      const turns = response.data.turns
-      setUserTurns(turns);
-    } catch (error: any) {
-      Alert.alert("Error al obtener los turnos del usuario", JSON.stringify(error.message));
-    }
+    if(member) {setUserTurns(member.turns)}
   };
 
   const handleSubscribe = async (turnId: number) => {
@@ -78,8 +82,8 @@ const WeeklyCalendarView: React.FC = () => {
       return;
     }
     try {
-      const response = await Api.suscribe({ turnIds: [turnId] }, token);
-      setMember({ ...member, registrations: response.data });
+      await Api.suscribe({ turnIds: [turnId] }, token);
+      setMember({ ...member, turns: [...member.turns, turnId], });
       setUserTurns((prev) => [...prev, turnId]);
       openModal("Éxito", "¡Te inscribiste con éxito!", () => setModalVisible(false));
     } catch (error) {
