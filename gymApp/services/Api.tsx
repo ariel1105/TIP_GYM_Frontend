@@ -2,7 +2,7 @@ import { Suscriptions } from '@/types/types';
 import Axios from 'axios';
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-export const API_BASE_URL = "http://192.168.0.33:8080/";
+export const API_BASE_URL = "http://192.168.1.39:8080/";
 
 const axiosInstance = Axios.create({
     baseURL: API_BASE_URL,

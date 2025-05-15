@@ -28,6 +28,7 @@ export interface Registration {
 export interface ActivityCardProps {
   item: Activity;
   onPress: (activity: Activity) => void;
+  width: number
 }
 
 export interface CheckboxDiasProps {

@@ -3,18 +3,18 @@ import { ActivityCardProps } from "@/types/types";
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ item, onPress }) => {
+const ActivityCard: React.FC<ActivityCardProps> = ({ item, onPress, width = 350  }) => {
   const colors = useColors();
 
   const styles = StyleSheet.create({
     card: {
       marginBottom: 20,
-      width: 350,
+      width: width,
       borderRadius: 12,
       overflow: "hidden",
     },
     image: {
-      width: 350,
+      width: width,
       height: 100,
       resizeMode: "cover",
       borderRadius: 12,
