@@ -24,11 +24,47 @@ export interface Registration {
   startTime: string; 
 }
 
+export interface Suscriptions {
+  turnIds: number[];
+}
+
+export interface Voucher {
+  activityId: number;
+  amount: number
+}
+
+export interface Member {
+  id: number;
+  name: string;
+  username: string;
+  registrations: Registration[];
+  turns: number[]
+  vouchers: Voucher[]
+}
+
+export interface UserLogin {
+  username: string;
+  password: string
+}
+
+export interface UserRegister {
+  name: string;
+  username: string;
+  password: string
+}
+
+export interface Event {
+  id?: number;
+  title: string;
+  start: Date;
+  end: Date;
+  disabled?:boolean
+}
 
 export interface ActivityCardProps {
   item: Activity;
   onPress: (activity: Activity) => void;
-  width: number
+  width?: number
 }
 
 export interface CheckboxDiasProps {
@@ -67,14 +103,6 @@ export interface ScheduleSelectorProps {
     getTurnosByActivity: (activityName: string) => Turn[];
 }
 
-export interface Event {
-  id?: number;
-  title: string;
-  start: Date;
-  end: Date;
-  disabled?:boolean
-}
-
 export interface AlertModalProps {
   visible: boolean;
   onClose: () => void;
@@ -83,27 +111,4 @@ export interface AlertModalProps {
   mensaje?: string;
   action? : () => void;
   actionButton?: string;
-}
-
-export interface Suscriptions {
-  turnIds: number[];
-}
-
-export interface Member {
-  id: number;
-  name: string;
-  username: string;
-  registrations: Registration[];
-  turns: number[]
-}
-
-export interface UserLogin {
-  username: string;
-  password: string
-}
-
-export interface UserRegister {
-  name: string;
-  username: string;
-  password: string
 }

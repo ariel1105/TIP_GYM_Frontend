@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
 import Api from '@/services/Api';
 import { Registration } from '@/types/types';
@@ -14,6 +14,7 @@ export default function Enrollments() {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [weekStart, setWeekStart] = useState(moment().startOf("isoWeek"));
 
   const colors = useColors()
   const { member, setMember, token } = useAuth();
@@ -52,10 +53,7 @@ export default function Enrollments() {
   const handleCancelEnrollment = async () => {
     if (selectedEvent && selectedEvent.id) {
       try {
-
         await Api.unsubscribe(selectedEvent.id, token!!);
-
-        
         const updatedTurns = member!!.turns.filter(
           (item: number) => item != selectedEvent.id
         );
@@ -84,6 +82,11 @@ export default function Enrollments() {
       backgroundColor: colors.background,
       padding: 10,
     },
+    header: {
+      marginBottom: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
     calendarContainer: {
       backgroundColor: colors.surface,
       borderRadius: 8,
@@ -95,43 +98,74 @@ export default function Enrollments() {
       marginBottom: 10,
       textAlign: 'center',
     },
+    button: {
+      paddingHorizontal: 15,
+      paddingVertical: 10,
+      borderRadius: 5,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    buttonText: {
+      fontWeight: "bold",
+      fontSize: 18,
+      color: colors.black,
+    },
   });
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Mis Inscripciones</Text>
-      <View style={styles.calendarContainer}>
-        <Calendar
-          events={events}
-          height={600}
-          mode="week"
-          locale="es-AR"
-          weekStartsOn={1}
-          swipeEnabled={true}
-          showTime={false}
-          eventCellStyle={() => ({
-            backgroundColor: colors.primary,
-            borderRadius: 5,
-          })}
-          eventCellTextColor={colors.black}
-          theme={{
-            palette: {
-              primary: {
-                main: colors.primary,
-                contrastText: colors.black,
-              },
-              gray: {
-                '200': colors.text, // líneas divisorias
-                '500': colors.text,    // texto cabecera / horas
-                '800': colors.text, // números del día
-              },
-              nowIndicator: '#FF0000',
-              moreLabel: colors.black,
-            },
-          }}
-          onPressEvent={handleEventPress}
-        />
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: colors.primary }]}
+          onPress={() => setWeekStart((prev) => moment(prev).subtract(1, "week"))}
+        >
+          <Text style={[styles.buttonText, { color: "black" }]}>←</Text>
+        </TouchableOpacity>
+
+        <Text style={{ alignSelf: "center", color: colors.text }}>
+          Semana del {weekStart.format("DD/MM/YYYY")}
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: colors.primary }]}
+          onPress={() => setWeekStart((prev) => moment(prev).add(1, "week"))}
+        >
+          <Text style={[styles.buttonText, { color: "black" }]}>→</Text>
+        </TouchableOpacity>
       </View>
+
+      <Calendar
+        date={weekStart.toDate()}
+        events={events}
+        height={600}
+        mode="week"
+        locale="es-AR"
+        weekStartsOn={1}
+        swipeEnabled={false}
+        showTime={false}
+        eventCellStyle={() => ({
+          backgroundColor: colors.primary,
+          borderRadius: 5,
+        })}
+        eventCellTextColor={colors.black}
+        theme={{
+          palette: {
+            primary: {
+              main: colors.primary,
+              contrastText: colors.black,
+            },
+            gray: {
+              '200': colors.text, // líneas divisorias
+              '500': colors.text,    // texto cabecera / horas
+              '800': colors.text, // números del día
+            },
+            nowIndicator: '#FF0000',
+            moreLabel: colors.black,
+          },
+        }}
+        onPressEvent={handleEventPress}
+      />
       <AlertModal
         visible={modalVisible}
         onClose={handleCloseModal}

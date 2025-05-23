@@ -187,7 +187,7 @@ export default function ActivitiesScreen() {
       return;
     }
     try {
-      const response = await Api.suscribe(suscriptionBody, token);
+      await Api.suscribe(suscriptionBody, token);
       setMember({ ...member, turns: [...member.turns, ...selectedTurnIds] });
       setInscriptionSuccessModalVisible(true);
     } catch (error: any) {
@@ -210,10 +210,10 @@ export default function ActivitiesScreen() {
   }
 
   const goToInscriptions = () => {
-      setInscriptionSuccessModalVisible(false)
-      closeModal()
-      router.push(Routes.Enrollments)
-    }
+    setInscriptionSuccessModalVisible(false)
+    closeModal()
+    router.push(Routes.Enrollments)
+  }
 
   const goToLogin = () => {
     setLoginModalVisible(false)

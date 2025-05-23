@@ -61,24 +61,6 @@ const WeeklyCalendarView: React.FC = () => {
     try {
       const response = await Api.getWeekTurns(weekStart.format("YYYY-MM-DD"));
       setTurnsToShow(response.data)
-      // const formattedEvents: Event[] = response.data.map((turn: Turn) => {
-      //   const start = new Date(turn.datetime);
-      //   start.setHours(start.getHours() + 3);
-      //   const end = new Date(start.getTime() + 60 * 60 * 1000);
-      
-      //   const isPast = start < new Date();
-      //   const isUserSubscribed = userTurns.includes(turn.id);
-      //   const isFull = turn.enrolled >= turn.capacity;
-        
-      //   return {
-      //     id: turn.id.toString(),
-      //     title: turn.activityName,
-      //     start,
-      //     end,
-      //     disabled: isPast || isUserSubscribed || isFull,
-      //   };
-      // });      
-      // setEvents(formattedEvents);
     } catch (error: any) {
       Alert.alert("Error al obtener turnos semanales", JSON.stringify(error.message));
     }

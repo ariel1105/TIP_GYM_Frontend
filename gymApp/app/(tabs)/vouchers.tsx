@@ -1,17 +1,26 @@
 import ActivityCard from "@/components/ActivityCard";
 import Api from "@/services/Api";
-import { Activity, AppColors } from "@/types/types";
+import { Activity, AppColors, Voucher } from "@/types/types";
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Alert, Switch, TouchableOpacity } from "react-native";
 import getLocalImage from "../utils/getImages";
 import useColors from "@/theme/useColors";
 import VoucherCounter from "@/components/VoucherCounter";
+import { useAuth } from "@/context/AuthContext";
+import AlertModal from "@/components/AlertModal";
+import { router } from "expo-router";
+import { Routes } from "../constants/routes";
+
 
 export default function VouchersScreen () {
 
     const [activities, setActivities] = useState<Activity[]>([]);
     const [selectedVouchers, setSelectedVouchers] = useState<{ [key: number]: number }>({});
+    const [loginModalVisible, setLoginModalVisible] = useState(false);
+    const [acquirementSuccessModalVisible, setAcquirementSuccessModalVisible] = useState(false);
+    
     const colors : AppColors = useColors()
+    const { member, setMember, token } = useAuth();
 
     useEffect(() => {
         const fetchActivities = async () => {
@@ -39,16 +48,47 @@ export default function VouchersScreen () {
         }));
     };
 
-    const handleConfirm = () => {
-        const vouchersArray = Object.entries(selectedVouchers)
-            .filter(([_, amount]) => amount > 0) // Filtrar los que tienen al menos 1 voucher seleccionado
+    const handleConfirm = async () => {
+        if (!member || !token) {
+            setLoginModalVisible(true);
+            return;
+        }
+        const vouchersArray: Voucher[] = Object.entries(selectedVouchers)
+            .filter(([_, amount]) => amount > 0)
             .map(([activityId, amount]) => ({
                 activityId: parseInt(activityId),
                 amount,
             }));
 
-        console.log("Vouchers seleccionados:", vouchersArray);
+        try {
+            await Api.acquire(vouchersArray, token!!);
+            console.log("Vouchers seleccionados:", vouchersArray);
+            const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
+            setMember({ ...member, vouchers: updatedVouchers });
+            setAcquirementSuccessModalVisible(true)
+        } catch (error: any) {
+            Alert.alert("Error al adquirir vouchers", error.message || "Ocurrió un error inesperado.");
+        }
     };
+
+    const goToLogin = () => {
+        setLoginModalVisible(false)
+        router.push(Routes.Login)
+    }
+
+    const closeLoginModal = () => {
+        setLoginModalVisible(false)
+    }
+
+    const goToVouchers = () => {
+        setAcquirementSuccessModalVisible(false)
+        router.push(Routes.MyVouchers)
+    }
+
+    const closeAcquirementSuccessModal = () => {
+        setAcquirementSuccessModalVisible(false)
+    }
+
 
     const styles = StyleSheet.create({
         containerList: {
@@ -109,6 +149,26 @@ export default function VouchersScreen () {
                     <Text style={styles.confirmButtonText}>Confirmar</Text>
                 </TouchableOpacity>
             </View>
+
+            <AlertModal
+                visible={acquirementSuccessModalVisible}
+                onClose={closeAcquirementSuccessModal}
+                closeButton="Cerrar"
+                title={"¡Listo!"}
+                mensaje="¡Ya tenés tus vouchers!"
+                actionButton="Ver vouchers"
+                action={goToVouchers}
+            />
+            
+            <AlertModal
+                visible={loginModalVisible}
+                onClose={closeLoginModal}
+                closeButton="Cerrar"
+                title={"¡Atencion!"}
+                mensaje="Para esta acción necesitás estar logueado."
+                actionButton="Loguearme"
+                action={goToLogin}
+            />
         </View>
     );
 }
