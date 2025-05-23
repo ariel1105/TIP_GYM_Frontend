@@ -62,7 +62,6 @@ export default function VouchersScreen () {
 
         try {
             await Api.acquire(vouchersArray, token!!);
-            console.log("Vouchers seleccionados:", vouchersArray);
             const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
             setMember({ ...member, vouchers: updatedVouchers });
             setAcquirementSuccessModalVisible(true)
