@@ -25,6 +25,7 @@ export default function ActivitiesScreen() {
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [remainingVouchersActivity, setRemainingVouchersActivity] = useState(0)
   const [inscriptionSuccessModalVisible, setInscriptionSuccessModalVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [noTurnsModalVisible, setNoTurnsModalVisible] = useState(false);
@@ -33,7 +34,6 @@ export default function ActivitiesScreen() {
 
   const params = useLocalSearchParams();
   const activityIdFromParams = params.activityId as string | undefined;
-
 
   const colors : AppColors = useColors()
 
@@ -49,6 +49,25 @@ export default function ActivitiesScreen() {
   const diasSemana: DiaSemana[] = [
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
+
+  const updateRemainingVouchers = () => {
+    console.log("saerasa: " + JSON.stringify( member));
+    
+    const activityVouchers = selectedActivity && member
+                      ? member.vouchers.filter(v => v.activityId === selectedActivity.id)
+                      : [];
+    console.log("activity voucher: " + JSON.stringify(activityVouchers));
+    
+    const remainingVoucher = activityVouchers.reduce(
+                          (sum, voucher) => sum + voucher.remainingClasses!!
+                          ,0);
+    console.log("remainging voucher: " + remainingVoucher);
+    setRemainingVouchersActivity(remainingVoucher)
+  }
+
+  useEffect(()=> {
+    updateRemainingVouchers()
+  },[member])
 
   useEffect(() => {
 
@@ -149,6 +168,7 @@ export default function ActivitiesScreen() {
 
   const handleActivitySelect = async (activity: Activity) => {
     setSelectedActivity(activity);
+    updateRemainingVouchers()
     try {
       const response = await Api.getTurn(activity.id);
       setTurns(response.data);
@@ -203,7 +223,15 @@ export default function ActivitiesScreen() {
     }
     try {
       await Api.suscribe(suscriptionBody, token);
-      setMember({ ...member, turns: [...member.turns, ...selectedTurnIds] });
+      const updatedVouchers = [...member.vouchers];
+      const voucherToUpdate = updatedVouchers.find(v => v.activityId === selectedActivity!!.id && (v.remainingClasses ?? 0) > 0);
+      if (voucherToUpdate) voucherToUpdate.remainingClasses = (voucherToUpdate.remainingClasses ?? 1) - 1;
+      setMember({
+        ...member,
+        turns: [...member.turns, selectedTurnIds],
+        vouchers: updatedVouchers
+      });
+      //setMember({ ...member, turns: [...member.turns, ...selectedTurnIds] });
       setInscriptionSuccessModalVisible(true);
     } catch (error: any) {
       Alert.alert("Error al suscribirse", JSON.stringify(error.message));
@@ -216,6 +244,7 @@ export default function ActivitiesScreen() {
     setSelectedHorario(null);
     setSelectedDates([]);
     setTurns([])
+    setSelectedActivity(null)
     setReservationModalVisible(false)
   }
 
@@ -322,6 +351,7 @@ export default function ActivitiesScreen() {
             toggleDia={toggleDia}
             handleConfirmPress={handleConfirmPress}
             getTurnosByActivity={getTurnosByActivity}
+            remainingVouchers={remainingVouchersActivity}
           />
           <AlertModal
             visible={inscriptionSuccessModalVisible}

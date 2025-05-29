@@ -59,7 +59,10 @@ export default function Enrollments() {
         const updatedTurns = member!!.turns.filter(
           (item: number) => item != selectedEvent.id
         );
-        await setMember({ ...member, turns: updatedTurns });
+        await setMember({ 
+          ...member, 
+          turns: updatedTurns,
+          vouchers: [...member!!.vouchers, response.data] });
         setVoucherData(response.data);
         setVoucherModalVisible(true);
         setModalVisible(false);

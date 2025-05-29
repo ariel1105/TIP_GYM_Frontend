@@ -26,6 +26,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   toggleDia,
   handleConfirmPress,
   getTurnosByActivity,
+  remainingVouchers
 }) => {
 
   const colors= useColors()
@@ -33,13 +34,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUpdatedMember = async () => {
-      if (token) {
-        const response = await Api.getMember(token);
-        setMember(response.data);
-      }
-    };
-    fetchUpdatedMember();
+    
   }, [token])
 
   const styles = StyleSheet.create({
@@ -108,14 +103,14 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     },
   });
 
-  const activityVouchers = selectedActivity && member
-  ? member.vouchers.filter(v => v.activityId === selectedActivity.id)
-  : [];
+  // const activityVouchers = selectedActivity && member
+  // ? member.vouchers.filter(v => v.activityId === selectedActivity.id)
+  // : [];
 
-  const totalRemainingClasses = activityVouchers.reduce(
-    (sum, voucher) => sum + voucher.remainingClasses!!,
-    0
-  );
+  // const totalRemainingClasses = activityVouchers.reduce(
+  //   (sum, voucher) => sum + voucher.remainingClasses!!,
+  //   0
+  // );
 
 
   return (
@@ -161,7 +156,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
         <View style={{ marginTop: 20, alignItems: "center" }}>
           <Text style={{ color: colors.text, fontWeight: "bold" }}>
-            Vouchers disponibles: {totalRemainingClasses}
+            Vouchers disponibles: {remainingVouchers}
           </Text>
 
           <TouchableOpacity onPress={() => router.push("/vouchers")}>

@@ -43,15 +43,15 @@ const WeeklyCalendarView: React.FC = () => {
     formatTurnsToEvents();
   }, [member, weekStart, turnsToShow])
 
-  useEffect(() => {
-    const fetchUpdatedMember = async () => {
-      if (token) {
-        const response = await Api.getMember(token);
-        setMember(response.data);
-      }
-    };
-    fetchUpdatedMember();
-  }, [token])
+  // useEffect(() => {
+  //   const fetchUpdatedMember = async () => {
+  //     if (token) {
+  //       const response = await Api.getMember(token);
+  //       setMember(response.data);
+  //     }
+  //   };
+  //   fetchUpdatedMember();
+  // }, [token])
 
 
   const formatTurnsToEvents = () => {
@@ -116,7 +116,7 @@ const WeeklyCalendarView: React.FC = () => {
   return member.vouchers
     .filter((voucher) => voucher.activityId === activityId)
     .reduce((sum, voucher) => sum + (voucher.remainingClasses || 0), 0);
-};
+  };
 
 
 
@@ -127,6 +127,8 @@ const WeeklyCalendarView: React.FC = () => {
     }
 
     const remaining = getRemainingClasses(event.activityId);
+    console.log(JSON.stringify(member));
+    
     const mensaje = `${event.title} - ${moment(event.start).format("dddd HH:mm")}\nVouchers restantes: ${remaining}`;
 
     openModal(
@@ -250,3 +252,8 @@ const WeeklyCalendarView: React.FC = () => {
 };
 
 export default WeeklyCalendarView;
+// {"name":"arielito","username":"arielito","id":13,"turns":[1],
+//   "vouchers":
+//   [
+//     {"activityId":1,"amount":2,"remainingClasses":1,"activityName":"Yoga","acquisitionDate":"2025-05-28","acquisitionWay":"COMPRA"},
+//     {"activityId":1,"amount":2,"remainingClasses":2,"activityName":"Yoga","acquisitionDate":"2025-05-28","acquisitionWay":"COMPRA"}]}

@@ -99,6 +99,7 @@ export interface ReservationModalProps {
     toggleDia: (dia: DiaSemana) => void;
     handleConfirmPress: () => void;
     getTurnosByActivity: (activityName: string) => Turn[];
+    remainingVouchers: number
 }
 
 export interface ScheduleSelectorProps {

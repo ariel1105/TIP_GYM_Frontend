@@ -57,6 +57,7 @@ export default function VouchersScreen () {
             .filter(([_, amount]) => amount > 0)
             .map(([activityId, amount]) => ({
                 activityId: parseInt(activityId),
+                remainingClasses: amount,
                 amount,
             }));
 
