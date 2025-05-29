@@ -1,11 +1,14 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet} from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import ScheduleSelector from "./ScheduleSelector";
 import CheckboxDias from "./CheckboxDias";
 import { ReservationModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
+import Api from "@/services/Api";
 
   
 const ReservationModal: React.FC<ReservationModalProps> = ({
@@ -26,6 +29,18 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 }) => {
 
   const colors= useColors()
+  const {member, token, setMember} = useAuth()
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUpdatedMember = async () => {
+      if (token) {
+        const response = await Api.getMember(token);
+        setMember(response.data);
+      }
+    };
+    fetchUpdatedMember();
+  }, [token])
 
   const styles = StyleSheet.create({
     modalContainer: {
@@ -93,6 +108,16 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     },
   });
 
+  const activityVouchers = selectedActivity && member
+  ? member.vouchers.filter(v => v.activityId === selectedActivity.id)
+  : [];
+
+  const totalRemainingClasses = activityVouchers.reduce(
+    (sum, voucher) => sum + voucher.remainingClasses!!,
+    0
+  );
+
+
   return (
     <Modal visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
@@ -133,6 +158,18 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
           fijados={fijados}
           toggleDia={toggleDia}
         />
+
+        <View style={{ marginTop: 20, alignItems: "center" }}>
+          <Text style={{ color: colors.text, fontWeight: "bold" }}>
+            Vouchers disponibles: {totalRemainingClasses}
+          </Text>
+
+          <TouchableOpacity onPress={() => router.push("/vouchers")}>
+            <Text style={{ color: colors.text, textDecorationLine: "underline", marginTop: 5 }}>
+              Adquirir vouchers
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[

@@ -95,6 +95,10 @@ export default function Profile() {
         <Text style={styles.buttonText}>Mis inscripciones</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.MyVouchers)}>
+        <Text style={styles.buttonText}>Mis vouchers</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.disabledButton} disabled>
         <Text style={styles.disabledText}>Editar perfil (próximamente)</Text>
       </TouchableOpacity>

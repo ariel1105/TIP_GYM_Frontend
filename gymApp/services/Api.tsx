@@ -1,8 +1,6 @@
-import { Suscriptions } from '@/types/types';
+import { Suscriptions, Voucher } from '@/types/types';
 import Axios from 'axios';
-import * as SecureStore from "expo-secure-store";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-export const API_BASE_URL = "http://192.168.1.39:8080/";
+export const API_BASE_URL = "http://192.168.1.49:8080/";
 
 const axiosInstance = Axios.create({
     baseURL: API_BASE_URL,
@@ -50,6 +48,12 @@ const getMember = async (token: string) => {
    });
 }
 
+const getVouchers = async(token: string) => {
+    return get(`${API_BASE_URL}member/vouchers`, {
+        headers: { "Authorization": `Bearer ${token}`}
+    });
+}
+
 const suscribe = async (body : Suscriptions, token: string) => {
     return post(`${API_BASE_URL}member/subscribe`, body, {
         headers: { "Authorization": `Bearer ${token}`} 
@@ -58,6 +62,12 @@ const suscribe = async (body : Suscriptions, token: string) => {
 
 const unsubscribe = async (turnId: number, token: string) => {
     return del(`${API_BASE_URL}member/unsubscribe/${turnId}`, {
+        headers: { "Authorization": `Bearer ${token}`} 
+   });
+}
+
+const acquire = async (body: Voucher[], token: string) => {
+    return post(`${API_BASE_URL}member/acquire`, body, {
         headers: { "Authorization": `Bearer ${token}`} 
    });
 }
@@ -80,8 +90,10 @@ const Api = {
     getWeekTurns,
     getRegistrations,
     getMember,
+    getVouchers,
     suscribe,
     unsubscribe,
+    acquire,
     login,
     register
 }

@@ -10,14 +10,6 @@ export interface Activity {
   imagen: any;
 }
 
-export interface Turn {
-  id: number;
-  datetime: string;
-  capacity: number;
-  enrolled: number;
-  activityName: string;
-}
-
 export interface Registration {
   turnId: number;
   activityName: string;
@@ -30,7 +22,11 @@ export interface Suscriptions {
 
 export interface Voucher {
   activityId: number;
-  amount: number
+  amount: number;
+  remainingClasses?: number;
+  activityName?: string;
+  acquisitionDate?: Date,
+  acquisitionWay?: String
 }
 
 export interface Member {
@@ -53,12 +49,22 @@ export interface UserRegister {
   password: string
 }
 
+export interface Turn {
+  id: number;
+  datetime: string;
+  capacity: number;
+  enrolled: number;
+  activityName: string;
+  activityId: number; 
+}
+
 export interface Event {
   id?: number;
   title: string;
   start: Date;
   end: Date;
-  disabled?:boolean
+  disabled?:boolean,
+  activityId: number; 
 }
 
 export interface ActivityCardProps {
@@ -111,4 +117,6 @@ export interface AlertModalProps {
   mensaje?: string;
   action? : () => void;
   actionButton?: string;
+  linkText?: string;
+  linkAction?: () => void;
 }

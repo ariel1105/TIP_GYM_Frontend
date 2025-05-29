@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
 import Api from '@/services/Api';
-import { Registration } from '@/types/types';
+import { Registration, Voucher } from '@/types/types';
 import useColors from '@/theme/useColors';
 import { useAuth } from '@/context/AuthContext';
 import { Event } from '@/types/types';
@@ -15,6 +15,8 @@ export default function Enrollments() {
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [weekStart, setWeekStart] = useState(moment().startOf("isoWeek"));
+  const [voucherModalVisible, setVoucherModalVisible] = useState(false);
+  const [voucherData, setVoucherData] = useState<Voucher | null>(null);
 
   const colors = useColors()
   const { member, setMember, token } = useAuth();
@@ -53,11 +55,13 @@ export default function Enrollments() {
   const handleCancelEnrollment = async () => {
     if (selectedEvent && selectedEvent.id) {
       try {
-        await Api.unsubscribe(selectedEvent.id, token!!);
+        const response = await Api.unsubscribe(selectedEvent.id, token!!);
         const updatedTurns = member!!.turns.filter(
           (item: number) => item != selectedEvent.id
         );
         await setMember({ ...member, turns: updatedTurns });
+        setVoucherData(response.data);
+        setVoucherModalVisible(true);
         setModalVisible(false);
       } catch (error) {
         setModalVisible(false)
@@ -160,7 +164,7 @@ export default function Enrollments() {
               '500': colors.text,    // texto cabecera / horas
               '800': colors.text, // números del día
             },
-            nowIndicator: '#FF0000',
+            nowIndicator: colors.nowLineIndicator,
             moreLabel: colors.black,
           },
         }}
@@ -174,6 +178,20 @@ export default function Enrollments() {
         mensaje={`Actividad: ${selectedEvent?.title}\nFecha: ${moment(selectedEvent?.start).format('DD/MM/YYYY HH:mm')}`}
         action={handleCancelEnrollment}
         actionButton="Cancelar turno"
+      />
+
+      <AlertModal
+        visible={voucherModalVisible}
+        onClose={() => setVoucherModalVisible(false)}
+        closeButton="Cerrar"
+        title="Voucher generado"
+        mensaje={
+          voucherData
+            ? `Actividad: ${voucherData.activityName}\n` +
+              `Clases restantes: ${voucherData.remainingClasses}\n` +
+              `Fecha de adquisición: ${moment(voucherData.acquisitionDate).format('DD/MM/YYYY')}`
+            : ''
+        }
       />
 
       <AlertModal

@@ -19,7 +19,15 @@ const WeeklyCalendarView: React.FC = () => {
   const [turnsToShow, setTurnsToShow] = useState<Turn[]>([]);
   
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalProps, setModalProps] = useState({
+  const [modalProps, setModalProps] = useState<{
+    title: string;
+    mensaje: string;
+    action: () => void;
+    actionButton: string;
+    closeButton: string;
+    linkText?: string;
+    linkAction?: () => void;
+  }>({
     title: "",
     mensaje: "",
     action: () => {},
@@ -34,6 +42,16 @@ const WeeklyCalendarView: React.FC = () => {
   useEffect(() => {
     formatTurnsToEvents();
   }, [member, weekStart, turnsToShow])
+
+  useEffect(() => {
+    const fetchUpdatedMember = async () => {
+      if (token) {
+        const response = await Api.getMember(token);
+        setMember(response.data);
+      }
+    };
+    fetchUpdatedMember();
+  }, [token])
 
 
   const formatTurnsToEvents = () => {
@@ -52,7 +70,9 @@ const WeeklyCalendarView: React.FC = () => {
         start,
         end,
         disabled: isPast || isUserSubscribed || isFull,
+        activityId: turn.activityId, 
       };
+
       });      
       setEvents(formattedEvents);
   }
@@ -66,7 +86,7 @@ const WeeklyCalendarView: React.FC = () => {
     }
   };
 
-  const handleSubscribe = async (turnId: number) => {
+  const handleSubscribe = async (turnId: number, event: Event) => {
     if (!member || !token) {
       openModal("Atención", "Necesitás estar logueado para inscribirte.", () => router.push(Routes.Login), "Loguearme");
       return;
@@ -77,36 +97,62 @@ const WeeklyCalendarView: React.FC = () => {
     }
     try {
       await Api.suscribe({ turnIds: [turnId] }, token);
-      setMember({ ...member, turns: [...member.turns, turnId], });
+      const updatedVouchers = [...member.vouchers];
+      const voucherToUpdate = updatedVouchers.find(v => v.activityId === event.activityId && (v.remainingClasses ?? 0) > 0);
+      if (voucherToUpdate) voucherToUpdate.remainingClasses = (voucherToUpdate.remainingClasses ?? 1) - 1;
+      setMember({
+        ...member,
+        turns: [...member.turns, turnId],
+        vouchers: updatedVouchers
+      });
       openModal("Éxito", "¡Te inscribiste con éxito!", () => setModalVisible(false));
     } catch (error) {
       openModal("Error", "Error al suscribirse", () => setModalVisible(false));
     }
   };
 
+  const getRemainingClasses = (activityId: number): number => {
+  if (!member?.vouchers) return 0;
+  return member.vouchers
+    .filter((voucher) => voucher.activityId === activityId)
+    .reduce((sum, voucher) => sum + (voucher.remainingClasses || 0), 0);
+};
+
+
+
   const handleEventPress = (event: Event & { disabled?: boolean }) => {
     if (event.disabled) {
       openModal("Turno no disponible", "Este turno no está disponible.", () => setModalVisible(false));
       return;
     }
+
+    const remaining = getRemainingClasses(event.activityId);
+    const mensaje = `${event.title} - ${moment(event.start).format("dddd HH:mm")}\nVouchers restantes: ${remaining}`;
+
     openModal(
       "Inscripción",
-      `${event.title} - ${moment(event.start).format("dddd HH:mm")}`,
-      () => handleSubscribe(Number(event.id)),
-      "Confirmar"
+      mensaje,
+      () => handleSubscribe(Number(event.id), event),
+      "Confirmar",
+      "Cerrar",
+      "Adquirir vouchers",
+      () => router.push(Routes.Vouchers) 
     );
-  };
+  }
   
   const openModal = (
     title: string,
     mensaje: string,
     action: () => void,
     actionButton: string = "",
-    closeButton: string = "Cerrar"
+    closeButton: string = "Cerrar",
+    linkText?: string,
+    linkAction?: () => void
   ) => {
-    setModalProps({ title, mensaje, action, actionButton, closeButton });
+    setModalProps({ title, mensaje, action, actionButton, closeButton, linkText, linkAction });
     setModalVisible(true);
   };
+
 
 
   const styles = StyleSheet.create({
@@ -182,7 +228,7 @@ const WeeklyCalendarView: React.FC = () => {
               "500": colors.text,
               "800": colors.text,
             },
-            nowIndicator: "#FF0000",
+            nowIndicator: colors.nowLineIndicator,
             moreLabel: colors.black,
           },
         }}
@@ -195,7 +241,10 @@ const WeeklyCalendarView: React.FC = () => {
         action={modalProps.action}
         actionButton={modalProps.actionButton}
         closeButton={modalProps.closeButton}
+        linkText={modalProps.linkText}
+        linkAction={modalProps.linkAction}
       />
+
     </View>
   );
 };

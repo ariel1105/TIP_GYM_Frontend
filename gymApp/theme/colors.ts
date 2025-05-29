@@ -7,6 +7,7 @@ export const darkColors = {
   onSecondary: '#000000',
 
   today:'#FFFE91',
+  nowLineIndicator: '#FF0000',
 
   onConfirm: '#000',
 
@@ -43,6 +44,7 @@ export const lightColors = {
   secondary: '#FF8808',
   onSecondary: '#000000',
   today: '#FFFE91',
+  nowLineIndicator: '#FF0000',
   onConfirm: '#000',
   background: '#EDEDED',
   surface: '#e0e0e0',

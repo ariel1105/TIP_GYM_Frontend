@@ -13,6 +13,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import WeeklyCalendarView from "@/components/WeeklyCalendarView";
 import { Routes } from "../constants/routes";
+import { useLocalSearchParams } from "expo-router";
+
 
 export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -28,6 +30,9 @@ export default function ActivitiesScreen() {
   const [noTurnsModalVisible, setNoTurnsModalVisible] = useState(false);
 
   const [showWeeklyView, setShowWeeklyView] = useState(false);
+
+  const params = useLocalSearchParams();
+  const activityIdFromParams = params.activityId as string | undefined;
 
 
   const colors : AppColors = useColors()
@@ -64,6 +69,16 @@ export default function ActivitiesScreen() {
     }
     fetchActivities()
   }, []);
+
+  useEffect(() => {
+  if (activityIdFromParams && activities.length > 0) {
+    const matchedActivity = activities.find(act => act.id.toString() === activityIdFromParams);
+    if (matchedActivity) {
+      handleActivitySelect(matchedActivity);
+    }
+  }
+}, [activityIdFromParams, activities]);
+
 
   const toggleDia = (dia: DiaSemana) => {
     const estaFijado = fijados.includes(dia);
