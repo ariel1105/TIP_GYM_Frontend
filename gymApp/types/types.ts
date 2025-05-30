@@ -1,4 +1,5 @@
 import { darkColors } from "@/theme/colors";
+import { CustomDateStyle } from "react-native-calendar-picker";
 
 export type DiaSemana = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 export type AppColors = typeof darkColors;
@@ -99,7 +100,8 @@ export interface ReservationModalProps {
     toggleDia: (dia: DiaSemana) => void;
     handleConfirmPress: () => void;
     getTurnosByActivity: (activityName: string) => Turn[];
-    remainingVouchers: number
+    remainingVouchers: number,
+    disabledDates: any
 }
 
 export interface ScheduleSelectorProps {

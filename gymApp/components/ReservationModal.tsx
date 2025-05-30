@@ -26,7 +26,8 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   toggleDia,
   handleConfirmPress,
   getTurnosByActivity,
-  remainingVouchers
+  remainingVouchers,
+  disabledDates
 }) => {
 
   const colors= useColors()
@@ -123,6 +124,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
           selectedDayColor={colors.primary}
           selectedDayTextColor={colors.onPrimary}
           dayShape="circle"
+          disabledDates={disabledDates}
         />
 
         {selectedActivity && selectedDates.length > 0 && (

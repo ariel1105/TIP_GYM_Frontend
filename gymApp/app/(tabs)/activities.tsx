@@ -63,7 +63,7 @@ export default function ActivitiesScreen() {
 
   useEffect(()=> {
     updateRemainingVouchers()
-  },[member])
+  },[member, params])
 
   useEffect(() => {
 
@@ -185,7 +185,20 @@ export default function ActivitiesScreen() {
     }
     setReservationModalVisible(true);
   };
-  
+
+
+  const enabledDateStrings = new Set(
+    getTurnosByActivity(selectedActivity?.nombre || "").map(turn =>
+      moment(turn.datetime).format("YYYY-MM-DD")
+    )
+  );
+
+  const disabledDates = (date: Date): boolean => {
+    const today = moment().startOf("day");
+    const targetStr = moment(date).format("YYYY-MM-DD");
+
+    return moment(date).isBefore(today, 'day') || !enabledDateStrings.has(targetStr);
+  };
 
   const diasHabilitados: DiaSemana[] = selectedActivity
   ? Array.from(new Set(
@@ -199,27 +212,48 @@ export default function ActivitiesScreen() {
   //   handleDateClick(dateStr);
   // };
   const handleDateChange = (date: any) => {
-    const formattedDate = moment(date).format("YYYY-MM-DD");
-
-    setSelectedDates(prevSelected => {
-      if (prevSelected.includes(formattedDate)) {
-        // Si ya está seleccionada, la quitamos
-        return prevSelected.filter(d => d !== formattedDate);
+    const formatted = moment(date).format("YYYY-MM-DD");
+    if (!enabledDates().includes(formatted)) {
+      return; // No hacer nada si no está habilitada
+    }
+    setSelectedDates(prev => {
+      if (prev.includes(formatted)) {
+        return prev.filter(d => d !== formatted);
       } else {
-        // Si no está seleccionada, la agregamos
-        return [...prevSelected, formattedDate];
+        return [...prev, formatted];
       }
     });
   };
 
-    
-  const handleDateClick = (date: string) => {
-    if (selectedDates.includes(date)) {
-      setSelectedDates(prev => prev.filter(d => d !== date));
-    } else {
-      setSelectedDates(prev => [...prev, date]);
-    }
+  const enabledDates = () => {
+    if (!selectedActivity) return [];
+    const turnosActivity = getTurnosByActivity(selectedActivity.nombre);
+
+    return Array.from(new Set(
+      turnosActivity.map(turno => moment(turno.datetime).format("YYYY-MM-DD"))
+    ));
   };
+    // const formattedDate = moment(date).format("YYYY-MM-DD");
+
+
+    // setSelectedDates(prevSelected => {
+    //   if (prevSelected.includes(formattedDate)) {
+    //     // Si ya está seleccionada, la quitamos
+    //     return prevSelected.filter(d => d !== formattedDate);
+    //   } else {
+    //     // Si no está seleccionada, la agregamos
+    //     return [...prevSelected, formattedDate];
+    //   }
+    // });
+
+    
+  // const handleDateClick = (date: string) => {
+  //   if (selectedDates.includes(date)) {
+  //     setSelectedDates(prev => prev.filter(d => d !== date));
+  //   } else {
+  //     setSelectedDates(prev => [...prev, date]);
+  //   }
+  // };
 
   const handleConfirmPress = async () => {
     if (!member || !token) {
@@ -376,6 +410,7 @@ export default function ActivitiesScreen() {
             handleConfirmPress={handleConfirmPress}
             getTurnosByActivity={getTurnosByActivity}
             remainingVouchers={remainingVouchersActivity}
+            disabledDates={disabledDates}
           />
           <AlertModal
             visible={modalVisible}
