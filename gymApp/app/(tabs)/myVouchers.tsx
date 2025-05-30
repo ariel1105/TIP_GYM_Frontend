@@ -158,7 +158,7 @@ export default function MyVouchers() {
   });
 
   return (
-    <>
+     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Mis Vouchers</Text>
 
@@ -207,6 +207,6 @@ export default function MyVouchers() {
         actionButton="Confirmar"
       />
 
-    </>
+    </View>
   );
 }

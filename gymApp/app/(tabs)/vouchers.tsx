@@ -1,14 +1,14 @@
 import ActivityCard from "@/components/ActivityCard";
 import Api from "@/services/Api";
 import { Activity, AppColors, Voucher } from "@/types/types";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Alert, Switch, TouchableOpacity } from "react-native";
 import getLocalImage from "../utils/getImages";
 import useColors from "@/theme/useColors";
 import VoucherCounter from "@/components/VoucherCounter";
 import { useAuth } from "@/context/AuthContext";
 import AlertModal from "@/components/AlertModal";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Routes } from "../constants/routes";
 
 
@@ -40,6 +40,14 @@ export default function VouchersScreen () {
         }
         fetchActivities()
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            return () => {
+            setSelectedVouchers({});
+            };
+        }, [])
+    );
 
     const handleVoucherChange = (id: number, amount: number) => {
         setSelectedVouchers((prev) => ({

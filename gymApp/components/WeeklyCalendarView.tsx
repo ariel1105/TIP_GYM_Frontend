@@ -10,6 +10,7 @@ import AlertModal from "./AlertModal";
 import { router } from "expo-router";
 import { Routes } from "@/app/constants/routes";
 import { useFocusEffect } from '@react-navigation/native';
+import { useModal } from "@/hooks/useModal";
 
 const WeeklyCalendarView: React.FC = () => {
   const [weekStart, setWeekStart] = useState(moment().startOf("isoWeek"));
@@ -17,23 +18,8 @@ const WeeklyCalendarView: React.FC = () => {
   const { setMember, member, token } = useAuth();
   const colors = useColors();
   const [turnsToShow, setTurnsToShow] = useState<Turn[]>([]);
-  
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalProps, setModalProps] = useState<{
-    title: string;
-    mensaje: string;
-    action: () => void;
-    actionButton: string;
-    closeButton: string;
-    linkText?: string;
-    linkAction?: () => void;
-  }>({
-    title: "",
-    mensaje: "",
-    action: () => {},
-    actionButton: "",
-    closeButton: "Cerrar",
-  });
+
+  const { modalVisible, setModalVisible, modalProps, openModal } = useModal();
 
   useEffect(() => {
     fetchWeeklyTurns();
@@ -42,17 +28,6 @@ const WeeklyCalendarView: React.FC = () => {
   useEffect(() => {
     formatTurnsToEvents();
   }, [member, weekStart, turnsToShow])
-
-  // useEffect(() => {
-  //   const fetchUpdatedMember = async () => {
-  //     if (token) {
-  //       const response = await Api.getMember(token);
-  //       setMember(response.data);
-  //     }
-  //   };
-  //   fetchUpdatedMember();
-  // }, [token])
-
 
   const formatTurnsToEvents = () => {
       const formattedEvents: Event[] = turnsToShow.map((turn: Turn) => {
@@ -106,8 +81,13 @@ const WeeklyCalendarView: React.FC = () => {
         vouchers: updatedVouchers
       });
       openModal("Éxito", "¡Te inscribiste con éxito!", () => setModalVisible(false));
-    } catch (error) {
-      openModal("Error", "Error al suscribirse", () => setModalVisible(false));
+    } catch (error: any) {
+      const errorMessage = error?.response?.data || error?.message || "";
+      if (errorMessage.includes("No hay voucher válido para la actividad")) {
+        openModal("Sin voucher", "No tenés un voucher válido para esta actividad.", () => setModalVisible(false));
+      } else {
+        openModal("Error", "Error al suscribirse", () => setModalVisible(false));
+      }
     }
   };
 
@@ -127,7 +107,6 @@ const WeeklyCalendarView: React.FC = () => {
     }
 
     const remaining = getRemainingClasses(event.activityId);
-    console.log(JSON.stringify(member));
     
     const mensaje = `${event.title} - ${moment(event.start).format("dddd HH:mm")}\nVouchers restantes: ${remaining}`;
 
@@ -141,21 +120,6 @@ const WeeklyCalendarView: React.FC = () => {
       () => router.push(Routes.Vouchers) 
     );
   }
-  
-  const openModal = (
-    title: string,
-    mensaje: string,
-    action: () => void,
-    actionButton: string = "",
-    closeButton: string = "Cerrar",
-    linkText?: string,
-    linkAction?: () => void
-  ) => {
-    setModalProps({ title, mensaje, action, actionButton, closeButton, linkText, linkAction });
-    setModalVisible(true);
-  };
-
-
 
   const styles = StyleSheet.create({
     container: {
@@ -242,18 +206,12 @@ const WeeklyCalendarView: React.FC = () => {
         mensaje={modalProps.mensaje}
         action={modalProps.action}
         actionButton={modalProps.actionButton}
-        closeButton={modalProps.closeButton}
+        closeButton={modalProps.closeButton || "Cerrar"}
         linkText={modalProps.linkText}
         linkAction={modalProps.linkAction}
       />
-
     </View>
   );
 };
 
 export default WeeklyCalendarView;
-// {"name":"arielito","username":"arielito","id":13,"turns":[1],
-//   "vouchers":
-//   [
-//     {"activityId":1,"amount":2,"remainingClasses":1,"activityName":"Yoga","acquisitionDate":"2025-05-28","acquisitionWay":"COMPRA"},
-//     {"activityId":1,"amount":2,"remainingClasses":2,"activityName":"Yoga","acquisitionDate":"2025-05-28","acquisitionWay":"COMPRA"}]}

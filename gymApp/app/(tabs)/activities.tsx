@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import WeeklyCalendarView from "@/components/WeeklyCalendarView";
 import { Routes } from "../constants/routes";
 import { useLocalSearchParams } from "expo-router";
+import { useModal } from "@/hooks/useModal";
 
 
 export default function ActivitiesScreen() {
@@ -26,11 +27,11 @@ export default function ActivitiesScreen() {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [remainingVouchersActivity, setRemainingVouchersActivity] = useState(0)
-  const [inscriptionSuccessModalVisible, setInscriptionSuccessModalVisible] = useState(false);
-  const [loginModalVisible, setLoginModalVisible] = useState(false);
-  const [noTurnsModalVisible, setNoTurnsModalVisible] = useState(false);
 
   const [showWeeklyView, setShowWeeklyView] = useState(false);
+
+  const { modalVisible, setModalVisible, modalProps, openModal } = useModal();
+
 
   const params = useLocalSearchParams();
   const activityIdFromParams = params.activityId as string | undefined;
@@ -51,17 +52,12 @@ export default function ActivitiesScreen() {
   ];
 
   const updateRemainingVouchers = () => {
-    console.log("saerasa: " + JSON.stringify( member));
-    
     const activityVouchers = selectedActivity && member
                       ? member.vouchers.filter(v => v.activityId === selectedActivity.id)
                       : [];
-    console.log("activity voucher: " + JSON.stringify(activityVouchers));
-    
     const remainingVoucher = activityVouchers.reduce(
                           (sum, voucher) => sum + voucher.remainingClasses!!
                           ,0);
-    console.log("remainging voucher: " + remainingVoucher);
     setRemainingVouchersActivity(remainingVoucher)
   }
 
@@ -83,7 +79,12 @@ export default function ActivitiesScreen() {
         
         setActivities(ActivityesConImagen);
       } catch (error: any){
-        Alert.alert("Error al obtener actividades", JSON.stringify(error.message));
+        openModal(
+          "Error al obtener actividades",
+          error.message,
+          () => setModalVisible(false),
+          "Entendido"
+        );
       }
     }
     fetchActivities()
@@ -174,7 +175,12 @@ export default function ActivitiesScreen() {
       setTurns(response.data);
     } catch (error: any) {
       if (error.response?.status === 404) {
-        setNoTurnsModalVisible(true);
+        openModal(
+          "Sin turnos disponibles",
+          "No hay turnos disponibles para esta actividad.",
+          () => setModalVisible(false),
+          "Entendido"
+        );
       }
     }
     setReservationModalVisible(true);
@@ -188,10 +194,24 @@ export default function ActivitiesScreen() {
     ))
   : [];
 
-  const handleDateChange = (date: Date) => {
-    const dateStr = moment(date).format("YYYY-MM-DD");
-    handleDateClick(dateStr);
+  // const handleDateChange = (date: Date) => {
+  //   const dateStr = moment(date).format("YYYY-MM-DD");
+  //   handleDateClick(dateStr);
+  // };
+  const handleDateChange = (date: any) => {
+    const formattedDate = moment(date).format("YYYY-MM-DD");
+
+    setSelectedDates(prevSelected => {
+      if (prevSelected.includes(formattedDate)) {
+        // Si ya está seleccionada, la quitamos
+        return prevSelected.filter(d => d !== formattedDate);
+      } else {
+        // Si no está seleccionada, la agregamos
+        return [...prevSelected, formattedDate];
+      }
+    });
   };
+
     
   const handleDateClick = (date: string) => {
     if (selectedDates.includes(date)) {
@@ -203,9 +223,16 @@ export default function ActivitiesScreen() {
 
   const handleConfirmPress = async () => {
     if (!member || !token) {
-      setLoginModalVisible(true);
+      openModal(
+        "Iniciá sesión",
+        "Necesitás iniciar sesión para suscribirte.",
+        goToLogin,
+        "Iniciar sesión",
+        "Cancelar"
+      );
       return;
     }
+
     const selectedTurnIds = turns
       .filter(turn => {
         const fecha = moment(turn.datetime).format("YYYY-MM-DD");
@@ -218,9 +245,14 @@ export default function ActivitiesScreen() {
     };
     
     if (selectedDates.length === 0) {
-      Alert.alert("No se seleccionaron turnos válidos.");
+      openModal(
+        "Sin turnos",
+        "No seleccionaste ningún turno.",
+        () => setModalVisible(false),
+      );
       return;
     }
+
     try {
       await Api.suscribe(suscriptionBody, token);
       const updatedVouchers = [...member.vouchers];
@@ -231,10 +263,20 @@ export default function ActivitiesScreen() {
         turns: [...member.turns, selectedTurnIds],
         vouchers: updatedVouchers
       });
-      //setMember({ ...member, turns: [...member.turns, ...selectedTurnIds] });
-      setInscriptionSuccessModalVisible(true);
+      openModal(
+        "Suscripción exitosa",
+        "Te has suscripto exitosamente a la actividad.",
+        goToInscriptions,
+        "Ver inscripcion",
+      );
+
     } catch (error: any) {
-      Alert.alert("Error al suscribirse", JSON.stringify(error.message));
+      const errorMessage = error?.response?.data || error?.message || "";
+      if (errorMessage.includes("No hay voucher válido para la actividad")) {
+        openModal("Sin voucher", "No tenés un voucher válido para esta actividad.", () => setModalVisible(false));
+      } else {
+        openModal("Error", "Error al suscribirse", () => setModalVisible(false));
+      }
     }
   };
   
@@ -248,33 +290,15 @@ export default function ActivitiesScreen() {
     setReservationModalVisible(false)
   }
 
-  const closeInscriptionSuccessModal = () => {
-    setInscriptionSuccessModalVisible(false)
-    closeModal()
-  }
-
   const goToInscriptions = () => {
-    setInscriptionSuccessModalVisible(false)
     closeModal()
     router.push(Routes.Enrollments)
   }
 
   const goToLogin = () => {
-    setLoginModalVisible(false)
     closeModal()
     router.push(Routes.Login)
   }
-
-  const closeLoginModal = () => {
-    setLoginModalVisible(false)
-    closeModal()
-  }
-
-  const closeNoTurnsModal = () => {
-    setNoTurnsModalVisible(false)
-    closeModal()
-  }
-
   
 
   const styles = StyleSheet.create({
@@ -354,31 +378,15 @@ export default function ActivitiesScreen() {
             remainingVouchers={remainingVouchersActivity}
           />
           <AlertModal
-            visible={inscriptionSuccessModalVisible}
-            onClose={closeInscriptionSuccessModal}
-            closeButton="Cerrar"
-            title={"¡Listo!"}
-            mensaje="¡Ya tenés tu turno reservado!"
-            actionButton="Ver inscripción"
-            action={goToInscriptions}
-          />
-
-          <AlertModal
-            visible={loginModalVisible}
-            onClose={closeLoginModal}
-            closeButton="Cerrar"
-            title={"¡Atencion!"}
-            mensaje="Para esta acción necesitás estar logueado."
-            actionButton="Loguearme"
-            action={goToLogin}
-          />
-
-          <AlertModal
-            visible={noTurnsModalVisible}
-            onClose={closeNoTurnsModal}
-            closeButton="Cerrar"
-            title="Sin turnos disponibles"
-            mensaje="No hay turnos disponibles para esta actividad desde hoy en adelante."
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+            title={modalProps.title}
+            mensaje={modalProps.mensaje}
+            action={modalProps.action}
+            actionButton={modalProps.actionButton}
+            closeButton={modalProps.closeButton || "Cerrar"}
+            linkText={modalProps.linkText}
+            linkAction={modalProps.linkAction}
           />
         </>
       )}

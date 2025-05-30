@@ -1,6 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
-import { View, TextInput, Button, Text, Pressable, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, TextInput, Text, Pressable, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
 import useColors from "@/theme/useColors";
 import { Routes } from "../constants/routes";
@@ -33,6 +33,13 @@ export default function Login() {
       justifyContent: "center",
       padding: 20,
       backgroundColor: colors.background,
+    },
+    logo: {
+      width: 250,
+      height: 250,
+      resizeMode: "contain",
+      alignSelf: "center",
+      marginBottom: 20,
     },
     title: {
       fontSize: 24,
@@ -70,8 +77,10 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-
+       <Image
+        source={require("../../assets/images/LogoSyncSpaceDark.jpg")}
+        style={styles.logo}
+      />
       <TextInput
         placeholder="Username"
         placeholderTextColor={colors.black}

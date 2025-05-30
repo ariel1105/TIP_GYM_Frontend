@@ -103,16 +103,6 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     },
   });
 
-  // const activityVouchers = selectedActivity && member
-  // ? member.vouchers.filter(v => v.activityId === selectedActivity.id)
-  // : [];
-
-  // const totalRemainingClasses = activityVouchers.reduce(
-  //   (sum, voucher) => sum + voucher.remainingClasses!!,
-  //   0
-  // );
-
-
   return (
     <Modal visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
@@ -125,7 +115,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
         <CalendarPicker
           minDate={new Date()}
-          key={selectedDates.join(",")}
+          // key={selectedDates.join(",")}
           onDateChange={handleDateChange}
           customDatesStyles={getCustomDatesStyles()}
           textStyle={{ color: colors.text }}
