@@ -169,6 +169,7 @@ const WeeklyCalendarView: React.FC = () => {
 
       <Calendar
         date={weekStart.toDate()}
+        minHour={7}
         events={events}
         height={600}
         mode="week"
