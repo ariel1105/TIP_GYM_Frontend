@@ -3,7 +3,7 @@ import { Modal, View, Text, StyleSheet, TouchableOpacity, Pressable } from "reac
 import { AlertModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
 
-const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, actionButton}: AlertModalProps) => {
+const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, actionButton, linkText, linkAction}: AlertModalProps) => {
 
   const colors = useColors()
 
@@ -37,6 +37,11 @@ const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, act
       marginBottom: 20,
       color: colors.black,
     },
+    link: {
+      color: colors.black, 
+      marginTop: 10, 
+      textDecorationLine: "underline" 
+    },
     buttonContainer: {
       flexDirection: "row",
       justifyContent: actionButton ? "space-between" : "center" ,
@@ -65,6 +70,13 @@ const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, act
         <View style={styles.container}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{mensaje}</Text>
+          {linkText && linkAction && (
+            <Pressable onPress={linkAction}>
+              <Text style={styles.link}>
+                {linkText}
+              </Text>
+            </Pressable>
+          )}
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={onClose}>
               <Text style={styles.buttonText}>{closeButton}</Text>

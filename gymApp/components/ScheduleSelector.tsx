@@ -22,14 +22,12 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
     const fetchMemberTurns = async () => {
       try {
         if (!member) return
-
         const response = await Api.getMember(token!);
         setMemberTurns(response.data.turns || []);
       } catch (error: any) {
         Alert.alert("Error al obtener turnos del miembro", JSON.stringify(error.message));
       }
     };
-
     fetchMemberTurns();
   }, [member]);
 

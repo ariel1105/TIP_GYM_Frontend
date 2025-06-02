@@ -6,8 +6,8 @@ import ScheduleSelector from "./ScheduleSelector";
 import CheckboxDias from "./CheckboxDias";
 import { ReservationModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
+import { useRouter } from "expo-router";
 
-  
 const ReservationModal: React.FC<ReservationModalProps> = ({
   visible,
   onClose,
@@ -23,9 +23,12 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   toggleDia,
   handleConfirmPress,
   getTurnosByActivity,
+  remainingVouchers,
+  disabledDates
 }) => {
 
   const colors= useColors()
+  const router = useRouter();
 
   const styles = StyleSheet.create({
     modalContainer: {
@@ -105,7 +108,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
         <CalendarPicker
           minDate={new Date()}
-          key={selectedDates.join(",")}
+          // key={selectedDates.join(",")}
           onDateChange={handleDateChange}
           customDatesStyles={getCustomDatesStyles()}
           textStyle={{ color: colors.text }}
@@ -113,6 +116,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
           selectedDayColor={colors.primary}
           selectedDayTextColor={colors.onPrimary}
           dayShape="circle"
+          disabledDates={disabledDates}
         />
 
         {selectedActivity && selectedDates.length > 0 && (
@@ -133,6 +137,18 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
           fijados={fijados}
           toggleDia={toggleDia}
         />
+
+        <View style={{ marginTop: 20, alignItems: "center" }}>
+          <Text style={{ color: colors.text, fontWeight: "bold" }}>
+            Vouchers disponibles: {remainingVouchers}
+          </Text>
+
+          <TouchableOpacity onPress={() => router.push("/vouchers")}>
+            <Text style={{ color: colors.text, textDecorationLine: "underline", marginTop: 5 }}>
+              Adquirir vouchers
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[
@@ -155,8 +171,5 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     </Modal>
   );
 }
-  
 
 export default ReservationModal
-
-

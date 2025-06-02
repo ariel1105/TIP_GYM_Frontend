@@ -1,10 +1,9 @@
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Routes } from "../constants/routes";
 import useColors from "@/theme/useColors";
-import Api from "@/services/Api";
 import { AppColors } from "@/types/types";
 import { useAuth } from "@/context/AuthContext";
 
@@ -29,26 +28,43 @@ export default function HomeScreen() {
       )}
 
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
-        <Text style={[styles.greeting, { color: colors.text }]}>
-          Hola, {member?.name || "Invitado"}!
-        </Text>
-        <Text style={[styles.question, { color: colors.text }]}>
-          ¿Qué querés entrenar hoy?
-        </Text>
-        <View style={styles.buttonsContainer}>
+
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.greeting, { color: colors.text }]}>
+            Hola, {member?.name || "Invitado"}!
+          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            ¿Qué querés entrenar hoy?
+          </Text>
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.primary, shadowColor: colors.black }]}
+              onPress={() => router.push(Routes.Activities)}
+            >
+              <Icon name="running" size={40} color={colors.onPrimary} />
+              <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Actividades</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.primary, shadowColor: colors.black }]}
+              onPress={() => router.push(Routes.Machines)}
+            >
+              <Icon name="dumbbell" size={40} color={colors.onPrimary} />
+              <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Máquinas</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 20 }]}>
+            Adquirí vouchers y reservá tus turnos
+          </Text>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: colors.primary, shadowColor: colors.black }]}
-            onPress={() => router.push(Routes.Activities)}
+            onPress={() => router.push(Routes.Vouchers)}
           >
-            <Icon name="running" size={40} color={colors.onPrimary} />
-            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Actividades</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: colors.primary, shadowColor: colors.black }]}
-            onPress={() => router.push(Routes.Machines)}
-          >
-            <Icon name="dumbbell" size={40} color={colors.onPrimary} />
-            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Máquinas</Text>
+            <Icon name="ticket-alt" size={40} color={colors.onPrimary} />
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Vouchers</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -112,6 +128,17 @@ const styles = StyleSheet.create({
   loginButtonText: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  sectionTitle: {
+    fontSize: 19,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  sectionContainer: {
+    width: "100%",
+    marginBottom: 40,
+    alignItems: "center",
+    marginTop:40
   },
   
 });

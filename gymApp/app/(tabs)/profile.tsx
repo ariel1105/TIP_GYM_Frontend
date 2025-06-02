@@ -12,7 +12,6 @@ export default function Profile() {
   const { member } = useAuth();
   const { logout } = useAuth();
 
-
   const memberName = member?.name;
 
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -93,6 +92,10 @@ export default function Profile() {
 
       <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.Enrollments)}>
         <Text style={styles.buttonText}>Mis inscripciones</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.MyVouchers)}>
+        <Text style={styles.buttonText}>Mis vouchers</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.disabledButton} disabled>

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback  } from "react";
-import { View, Text, Alert, Button, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { Calendar } from "react-native-big-calendar";
 import moment from "moment";
 import Api from "@/services/Api";
@@ -9,7 +9,7 @@ import { Turn, Event } from "@/types/types";
 import AlertModal from "./AlertModal";
 import { router } from "expo-router";
 import { Routes } from "@/app/constants/routes";
-import { useFocusEffect } from '@react-navigation/native';
+import { useModal } from "@/hooks/useModal";
 
 const WeeklyCalendarView: React.FC = () => {
   const [weekStart, setWeekStart] = useState(moment().startOf("isoWeek"));
@@ -17,15 +17,8 @@ const WeeklyCalendarView: React.FC = () => {
   const { setMember, member, token } = useAuth();
   const colors = useColors();
   const [turnsToShow, setTurnsToShow] = useState<Turn[]>([]);
-  
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalProps, setModalProps] = useState({
-    title: "",
-    mensaje: "",
-    action: () => {},
-    actionButton: "",
-    closeButton: "Cerrar",
-  });
+
+  const { modalVisible, setModalVisible, modalProps, openModal } = useModal();
 
   useEffect(() => {
     fetchWeeklyTurns();
@@ -35,56 +28,36 @@ const WeeklyCalendarView: React.FC = () => {
     formatTurnsToEvents();
   }, [member, weekStart, turnsToShow])
 
-
   const formatTurnsToEvents = () => {
-      const formattedEvents: Event[] = turnsToShow.map((turn: Turn) => {
-      const start = new Date(turn.datetime);
-      start.setHours(start.getHours() + 3);
-      const end = new Date(start.getTime() + 60 * 60 * 1000);
-    
-      const isPast = start < new Date();
-      const isUserSubscribed = member?.turns.includes(turn.id);
-      const isFull = turn.enrolled >= turn.capacity;
-        
-      return {
-        id: turn.id,
-        title: turn.activityName,
-        start,
-        end,
-        disabled: isPast || isUserSubscribed || isFull,
-      };
-      });      
-      setEvents(formattedEvents);
-  }
+    const formattedEvents: Event[] = turnsToShow.map((turn: Turn) => {
+    const start = new Date(turn.datetime);
+    start.setHours(start.getHours() + 3);
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const isPast = start < new Date();
+    const isUserSubscribed = member?.turns.includes(turn.id);
+    const isFull = turn.enrolled >= turn.capacity;
+    return {
+      id: turn.id,
+      title: turn.activityName,
+      start,
+      end,
+      disabled: isPast || isUserSubscribed || isFull,
+      activityId: turn.activityId, 
+    };
+    });      
+    setEvents(formattedEvents);
+  };
 
   const fetchWeeklyTurns = async () => {
     try {
       const response = await Api.getWeekTurns(weekStart.format("YYYY-MM-DD"));
       setTurnsToShow(response.data)
-      // const formattedEvents: Event[] = response.data.map((turn: Turn) => {
-      //   const start = new Date(turn.datetime);
-      //   start.setHours(start.getHours() + 3);
-      //   const end = new Date(start.getTime() + 60 * 60 * 1000);
-      
-      //   const isPast = start < new Date();
-      //   const isUserSubscribed = userTurns.includes(turn.id);
-      //   const isFull = turn.enrolled >= turn.capacity;
-        
-      //   return {
-      //     id: turn.id.toString(),
-      //     title: turn.activityName,
-      //     start,
-      //     end,
-      //     disabled: isPast || isUserSubscribed || isFull,
-      //   };
-      // });      
-      // setEvents(formattedEvents);
     } catch (error: any) {
       Alert.alert("Error al obtener turnos semanales", JSON.stringify(error.message));
     }
   };
 
-  const handleSubscribe = async (turnId: number) => {
+  const handleSubscribe = async (turnId: number, event: Event) => {
     if (!member || !token) {
       openModal("Atención", "Necesitás estar logueado para inscribirte.", () => router.push(Routes.Login), "Loguearme");
       return;
@@ -95,11 +68,30 @@ const WeeklyCalendarView: React.FC = () => {
     }
     try {
       await Api.suscribe({ turnIds: [turnId] }, token);
-      setMember({ ...member, turns: [...member.turns, turnId], });
+      const updatedVouchers = [...member.vouchers];
+      const voucherToUpdate = updatedVouchers.find(v => v.activityId === event.activityId && (v.remainingClasses ?? 0) > 0);
+      if (voucherToUpdate) voucherToUpdate.remainingClasses = (voucherToUpdate.remainingClasses ?? 1) - 1;
+      setMember({
+        ...member,
+        turns: [...member.turns, turnId],
+        vouchers: updatedVouchers
+      });
       openModal("Éxito", "¡Te inscribiste con éxito!", () => setModalVisible(false));
-    } catch (error) {
-      openModal("Error", "Error al suscribirse", () => setModalVisible(false));
+    } catch (error: any) {
+      const errorMessage = error?.response?.data || error?.message || "";
+      if (errorMessage.includes("No hay voucher válido para la actividad")) {
+        openModal("Sin voucher", "No tenés un voucher válido para esta actividad.", () => setModalVisible(false));
+      } else {
+        openModal("Error", "Error al suscribirse", () => setModalVisible(false));
+      }
     }
+  };
+
+  const getRemainingClasses = (activityId: number): number => {
+  if (!member?.vouchers) return 0;
+  return member.vouchers
+    .filter((voucher) => voucher.activityId === activityId)
+    .reduce((sum, voucher) => sum + (voucher.remainingClasses || 0), 0);
   };
 
   const handleEventPress = (event: Event & { disabled?: boolean }) => {
@@ -107,25 +99,18 @@ const WeeklyCalendarView: React.FC = () => {
       openModal("Turno no disponible", "Este turno no está disponible.", () => setModalVisible(false));
       return;
     }
+    const remaining = getRemainingClasses(event.activityId);
+    const mensaje = `${event.title} - ${moment(event.start).format("dddd HH:mm")}\nVouchers restantes: ${remaining}`;
     openModal(
       "Inscripción",
-      `${event.title} - ${moment(event.start).format("dddd HH:mm")}`,
-      () => handleSubscribe(Number(event.id)),
-      "Confirmar"
+      mensaje,
+      () => handleSubscribe(Number(event.id), event),
+      "Confirmar",
+      "Cerrar",
+      "Adquirir vouchers",
+      () => router.push(Routes.Vouchers) 
     );
   };
-  
-  const openModal = (
-    title: string,
-    mensaje: string,
-    action: () => void,
-    actionButton: string = "",
-    closeButton: string = "Cerrar"
-  ) => {
-    setModalProps({ title, mensaje, action, actionButton, closeButton });
-    setModalVisible(true);
-  };
-
 
   const styles = StyleSheet.create({
     container: {
@@ -175,6 +160,7 @@ const WeeklyCalendarView: React.FC = () => {
 
       <Calendar
         date={weekStart.toDate()}
+        minHour={7}
         events={events}
         height={600}
         mode="week"
@@ -200,7 +186,7 @@ const WeeklyCalendarView: React.FC = () => {
               "500": colors.text,
               "800": colors.text,
             },
-            nowIndicator: "#FF0000",
+            nowIndicator: colors.nowLineIndicator,
             moreLabel: colors.black,
           },
         }}
@@ -212,7 +198,9 @@ const WeeklyCalendarView: React.FC = () => {
         mensaje={modalProps.mensaje}
         action={modalProps.action}
         actionButton={modalProps.actionButton}
-        closeButton={modalProps.closeButton}
+        closeButton={modalProps.closeButton || "Cerrar"}
+        linkText={modalProps.linkText}
+        linkAction={modalProps.linkAction}
       />
     </View>
   );

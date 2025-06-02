@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert, Switch } from "react-native";
+import { View, Text, StyleSheet, FlatList, Switch } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
 import Api from "@/services/Api";
@@ -13,6 +13,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import WeeklyCalendarView from "@/components/WeeklyCalendarView";
 import { Routes } from "../constants/routes";
+import { useLocalSearchParams } from "expo-router";
+import { useModal } from "@/hooks/useModal";
+
 
 export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -23,19 +26,20 @@ export default function ActivitiesScreen() {
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [inscriptionSuccessModalVisible, setInscriptionSuccessModalVisible] = useState(false);
-  const [loginModalVisible, setLoginModalVisible] = useState(false);
-  const [noTurnsModalVisible, setNoTurnsModalVisible] = useState(false);
+  const [remainingVouchersActivity, setRemainingVouchersActivity] = useState(0)
 
   const [showWeeklyView, setShowWeeklyView] = useState(false);
 
+  const { modalVisible, setModalVisible, modalProps, openModal } = useModal();
+
+  const params = useLocalSearchParams();
+  const activityIdFromParams = params.activityId as string | undefined;
 
   const colors : AppColors = useColors()
 
   const { token, member, setMember } = useAuth();
 
   const router = useRouter();
-
 
   const getTurnosByActivity = (activityName: string) => {
     return turns.filter(turn => turn.activityName === activityName);
@@ -45,8 +49,21 @@ export default function ActivitiesScreen() {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
 
-  useEffect(() => {
+  const updateRemainingVouchers = () => {
+    const activityVouchers = selectedActivity && member
+                      ? member.vouchers.filter(v => v.activityId === selectedActivity.id)
+                      : [];
+    const remainingVoucher = activityVouchers.reduce(
+                          (sum, voucher) => sum + voucher.remainingClasses!!
+                          ,0);
+    setRemainingVouchersActivity(remainingVoucher)
+  }
 
+  useEffect(()=> {
+    updateRemainingVouchers()
+  },[member, params])
+
+  useEffect(() => {
     const fetchActivities = async () => {
       try {
         const response = await Api.getActivities()
@@ -59,20 +76,33 @@ export default function ActivitiesScreen() {
         
         setActivities(ActivityesConImagen);
       } catch (error: any){
-        Alert.alert("Error al obtener actividades", JSON.stringify(error.message));
+        openModal(
+          "Error al obtener actividades",
+          error.message,
+          () => setModalVisible(false),
+          "Entendido"
+        );
       }
     }
     fetchActivities()
   }, []);
+
+  useEffect(() => {
+    if (activityIdFromParams && activities.length > 0) {
+      const matchedActivity = activities.find(act => act.id.toString() === activityIdFromParams);
+      if (matchedActivity) {
+        handleActivitySelect(matchedActivity);
+      }
+    }
+  }, [activityIdFromParams, activities]);
+
 
   const toggleDia = (dia: DiaSemana) => {
     const estaFijado = fijados.includes(dia);
     const nuevaLista = estaFijado
       ? fijados.filter(d => d !== dia)
       : [...fijados, dia];
-  
     const turnosActivity = getTurnosByActivity(selectedActivity?.nombre || "");
-  
     const nuevasFechas: string[] = turnosActivity
       .filter(turn => {
         const diaTurno = moment(turn.datetime).format("dddd") as DiaSemana;
@@ -88,7 +118,6 @@ export default function ActivitiesScreen() {
         }
         return false;
       });
-  
     setFijados(nuevaLista);
     setSelectedDates((prev) => {
       if (!estaFijado) {
@@ -98,13 +127,10 @@ export default function ActivitiesScreen() {
       }
     });
   };
-  
 
   const getActivityDays = () => {
     if (!selectedActivity) return [];
-  
     const turnosActivity = getTurnosByActivity(selectedActivity.nombre);
-  
     return turnosActivity.map(turno => {
       const fecha = moment(turno.datetime).format("YYYY-MM-DD");
       return {
@@ -134,17 +160,36 @@ export default function ActivitiesScreen() {
 
   const handleActivitySelect = async (activity: Activity) => {
     setSelectedActivity(activity);
+    updateRemainingVouchers()
+    setReservationModalVisible(true);
     try {
       const response = await Api.getTurn(activity.id);
       setTurns(response.data);
     } catch (error: any) {
       if (error.response?.status === 404) {
-        setNoTurnsModalVisible(true);
+        openModal(
+          "Sin turnos disponibles",
+          "No hay turnos disponibles para esta actividad.",
+          () => setModalVisible(false),
+          "Entendido"
+        );
       }
     }
-    setReservationModalVisible(true);
+
   };
-  
+
+
+  const enabledDateStrings = new Set(
+    getTurnosByActivity(selectedActivity?.nombre || "").map(turn =>
+      moment(turn.datetime).format("YYYY-MM-DD")
+    )
+  );
+
+  const disabledDates = (date: Date): boolean => {
+    const today = moment().startOf("day");
+    const targetStr = moment(date).format("YYYY-MM-DD");
+    return moment(date).isBefore(today, 'day') || !enabledDateStrings.has(targetStr);
+  };
 
   const diasHabilitados: DiaSemana[] = selectedActivity
   ? Array.from(new Set(
@@ -153,22 +198,38 @@ export default function ActivitiesScreen() {
     ))
   : [];
 
-  const handleDateChange = (date: Date) => {
-    const dateStr = moment(date).format("YYYY-MM-DD");
-    handleDateClick(dateStr);
-  };
-    
-  const handleDateClick = (date: string) => {
-    if (selectedDates.includes(date)) {
-      setSelectedDates(prev => prev.filter(d => d !== date));
-    } else {
-      setSelectedDates(prev => [...prev, date]);
+  const handleDateChange = (date: any) => {
+    const formatted = moment(date).format("YYYY-MM-DD");
+    if (!enabledDates().includes(formatted)) {
+      return; // No hacer nada si no está habilitada
     }
+    setSelectedDates(prev => {
+      if (prev.includes(formatted)) {
+        return prev.filter(d => d !== formatted);
+      } else {
+        return [...prev, formatted];
+      }
+    });
+  };
+
+  const enabledDates = () => {
+    if (!selectedActivity) return [];
+    const turnosActivity = getTurnosByActivity(selectedActivity.nombre);
+
+    return Array.from(new Set(
+      turnosActivity.map(turno => moment(turno.datetime).format("YYYY-MM-DD"))
+    ));
   };
 
   const handleConfirmPress = async () => {
     if (!member || !token) {
-      setLoginModalVisible(true);
+      openModal(
+        "Iniciá sesión",
+        "Necesitás iniciar sesión para suscribirte.",
+        goToLogin,
+        "Iniciar sesión",
+        "Cancelar"
+      );
       return;
     }
     const selectedTurnIds = turns
@@ -177,21 +238,40 @@ export default function ActivitiesScreen() {
         return selectedDates.includes(fecha) && turn.activityName === selectedActivity?.nombre;
       })
       .map(turn => turn.id);
-
     const suscriptionBody : Suscriptions = {
       turnIds: selectedTurnIds
     };
-    
     if (selectedDates.length === 0) {
-      Alert.alert("No se seleccionaron turnos válidos.");
+      openModal(
+        "Sin turnos",
+        "No seleccionaste ningún turno.",
+        () => setModalVisible(false),
+      );
       return;
     }
     try {
-      const response = await Api.suscribe(suscriptionBody, token);
-      setMember({ ...member, turns: [...member.turns, ...selectedTurnIds] });
-      setInscriptionSuccessModalVisible(true);
+      await Api.suscribe(suscriptionBody, token);
+      const updatedVouchers = [...member.vouchers];
+      const voucherToUpdate = updatedVouchers.find(v => v.activityId === selectedActivity!!.id && (v.remainingClasses ?? 0) > 0);
+      if (voucherToUpdate) voucherToUpdate.remainingClasses = (voucherToUpdate.remainingClasses ?? 1) - 1;
+      setMember({
+        ...member,
+        turns: [...member.turns, selectedTurnIds],
+        vouchers: updatedVouchers
+      });
+      openModal(
+        "Suscripción exitosa",
+        "Te has suscripto exitosamente a la actividad.",
+        goToInscriptions,
+        "Ver inscripcion",
+      );
     } catch (error: any) {
-      Alert.alert("Error al suscribirse", JSON.stringify(error.message));
+      const errorMessage = error?.response?.data || error?.message || "";
+      if (errorMessage.includes("No hay voucher válido para la actividad")) {
+        openModal("Sin voucher", "No tenés un voucher válido para esta actividad.", () => setModalVisible(false));
+      } else {
+        openModal("Error", "Error al suscribirse", () => setModalVisible(false));
+      }
     }
   };
   
@@ -201,37 +281,19 @@ export default function ActivitiesScreen() {
     setSelectedHorario(null);
     setSelectedDates([]);
     setTurns([])
+    setSelectedActivity(null)
     setReservationModalVisible(false)
   }
 
-  const closeInscriptionSuccessModal = () => {
-    setInscriptionSuccessModalVisible(false)
+  const goToInscriptions = () => {
     closeModal()
+    router.push(Routes.Enrollments)
   }
 
-  const goToInscriptions = () => {
-      setInscriptionSuccessModalVisible(false)
-      closeModal()
-      router.push(Routes.Enrollments)
-    }
-
   const goToLogin = () => {
-    setLoginModalVisible(false)
     closeModal()
     router.push(Routes.Login)
   }
-
-  const closeLoginModal = () => {
-    setLoginModalVisible(false)
-    closeModal()
-  }
-
-  const closeNoTurnsModal = () => {
-    setNoTurnsModalVisible(false)
-    closeModal()
-  }
-
-  
 
   const styles = StyleSheet.create({
     containerList: {
@@ -307,33 +369,19 @@ export default function ActivitiesScreen() {
             toggleDia={toggleDia}
             handleConfirmPress={handleConfirmPress}
             getTurnosByActivity={getTurnosByActivity}
+            remainingVouchers={remainingVouchersActivity}
+            disabledDates={disabledDates}
           />
           <AlertModal
-            visible={inscriptionSuccessModalVisible}
-            onClose={closeInscriptionSuccessModal}
-            closeButton="Cerrar"
-            title={"¡Listo!"}
-            mensaje="¡Ya tenés tu turno reservado!"
-            actionButton="Ver inscripción"
-            action={goToInscriptions}
-          />
-
-          <AlertModal
-            visible={loginModalVisible}
-            onClose={closeLoginModal}
-            closeButton="Cerrar"
-            title={"¡Atencion!"}
-            mensaje="Para esta acción necesitás estar logueado."
-            actionButton="Loguearme"
-            action={goToLogin}
-          />
-
-          <AlertModal
-            visible={noTurnsModalVisible}
-            onClose={closeNoTurnsModal}
-            closeButton="Cerrar"
-            title="Sin turnos disponibles"
-            mensaje="No hay turnos disponibles para esta actividad desde hoy en adelante."
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+            title={modalProps.title}
+            mensaje={modalProps.mensaje}
+            action={modalProps.action}
+            actionButton={modalProps.actionButton}
+            closeButton={modalProps.closeButton || "Cerrar"}
+            linkText={modalProps.linkText}
+            linkAction={modalProps.linkAction}
           />
         </>
       )}

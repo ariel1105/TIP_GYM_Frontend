@@ -10,24 +10,67 @@ export interface Activity {
   imagen: any;
 }
 
-export interface Turn {
-  id: number;
-  datetime: string;
-  capacity: number;
-  enrolled: number;
-  activityName: string;
-}
-
 export interface Registration {
   turnId: number;
   activityName: string;
   startTime: string; 
 }
 
+export interface Suscriptions {
+  turnIds: number[];
+}
+
+export interface Voucher {
+  activityId: number;
+  amount: number;
+  remainingClasses?: number;
+  activityName?: string;
+  acquisitionDate?: Date,
+  acquisitionWay?: String
+}
+
+export interface Member {
+  id: number;
+  name: string;
+  username: string;
+  registrations: Registration[];
+  turns: number[]
+  vouchers: Voucher[]
+}
+
+export interface UserLogin {
+  username: string;
+  password: string
+}
+
+export interface UserRegister {
+  name: string;
+  username: string;
+  password: string
+}
+
+export interface Turn {
+  id: number;
+  datetime: string;
+  capacity: number;
+  enrolled: number;
+  activityName: string;
+  activityId: number; 
+}
+
+export interface Event {
+  id?: number;
+  title: string;
+  start: Date;
+  end: Date;
+  disabled?:boolean,
+  activityId: number; 
+}
 
 export interface ActivityCardProps {
   item: Activity;
   onPress: (activity: Activity) => void;
+  width?: number
 }
 
 export interface CheckboxDiasProps {
@@ -56,6 +99,8 @@ export interface ReservationModalProps {
     toggleDia: (dia: DiaSemana) => void;
     handleConfirmPress: () => void;
     getTurnosByActivity: (activityName: string) => Turn[];
+    remainingVouchers: number,
+    disabledDates: any
 }
 
 export interface ScheduleSelectorProps {
@@ -66,14 +111,6 @@ export interface ScheduleSelectorProps {
     getTurnosByActivity: (activityName: string) => Turn[];
 }
 
-export interface Event {
-  id?: number;
-  title: string;
-  start: Date;
-  end: Date;
-  disabled?:boolean
-}
-
 export interface AlertModalProps {
   visible: boolean;
   onClose: () => void;
@@ -82,27 +119,6 @@ export interface AlertModalProps {
   mensaje?: string;
   action? : () => void;
   actionButton?: string;
-}
-
-export interface Suscriptions {
-  turnIds: number[];
-}
-
-export interface Member {
-  id: number;
-  name: string;
-  username: string;
-  registrations: Registration[];
-  turns: number[]
-}
-
-export interface UserLogin {
-  username: string;
-  password: string
-}
-
-export interface UserRegister {
-  name: string;
-  username: string;
-  password: string
+  linkText?: string;
+  linkAction?: () => void;
 }

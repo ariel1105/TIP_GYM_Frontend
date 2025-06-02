@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
-import { router, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import Api from "@/services/Api";
 import { Member, UserLogin, UserRegister } from "@/types/types";
 import { Routes } from "@/app/constants/routes";
@@ -32,29 +32,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loadToken();
   }, []);
 
- 
-
   const login = async ({ username, password }: UserLogin) => {
-  try {
-    const response = await Api.login({ username, password });
-    const token = response.data;
-    setToken(token);
-    await SecureStore.setItemAsync("token", token);
-
-    const memberResponse = await Api.getMember(token);
-    setMember(memberResponse.data);
-    
-    router.push(Routes.Home);
-  } catch (error: any) {
-    if (!error.response) {
-      Alert.alert("Ocurrio un error al loguearse", JSON.stringify(error.message));
-    } else {
-      const errorMessage = error.response?.data;
-      throw new Error(errorMessage);
+    try {
+      const response = await Api.login({ username, password });
+      const token = response.data;
+      setToken(token);
+      await SecureStore.setItemAsync("token", token);
+      const memberResponse = await Api.getMember(token);
+      setMember(memberResponse.data);
+      router.push(Routes.Home);
+    } catch (error: any) {
+      if (!error.response) {
+        Alert.alert("Ocurrio un error al loguearse", JSON.stringify(error.message));
+      } 
+      else {
+        const errorMessage = error.response?.data;
+        throw new Error(errorMessage);
+      }
     }
-    }
-    
-};
+  };
 
   
   const register = async (userData: UserRegister) => {
@@ -63,20 +59,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const token = response.data;
       setToken(token);
       await SecureStore.setItemAsync("token", token);
-
       const memberResponse = await Api.getMember(token);
       setMember(memberResponse.data);
-
       router.push(Routes.Home);
     } catch (error: any) {
       if (!error.response) {
         Alert.alert("Ocurrio un error al registrarse", JSON.stringify(error.message));
-      } else {
+      } 
+      else {
         throw new Error(error);
       }
     }
   };
-
 
   const logout = async () => {
     setToken(null);
