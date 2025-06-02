@@ -10,6 +10,8 @@ import { useAuth } from "@/context/AuthContext";
 import AlertModal from "@/components/AlertModal";
 import { router, useFocusEffect } from "expo-router";
 import { Routes } from "../constants/routes";
+import { handleIntegrationMP } from "../utils/MPIntegration";
+import {openBrowserAsync} from "expo-web-browser"
 
 export default function VouchersScreen () {
 
@@ -62,16 +64,27 @@ export default function VouchersScreen () {
         }
         const vouchersArray: Voucher[] = Object.entries(selectedVouchers)
             .filter(([_, amount]) => amount > 0)
-            .map(([activityId, amount]) => ({
-                activityId: parseInt(activityId),
-                remainingClasses: amount,
-                amount,
-            }));
+            .map(([activityId, amount]) => {
+                const activity = activities.find((a) => a.id === parseInt(activityId));
+                return {
+                    activityId: parseInt(activityId),
+                    activityName: activity?.nombre || "Nombre no encontrado",
+                    remainingClasses: amount,
+                    amount,
+                    price: 10.0,
+                };
+            });
         try {
-            await Api.acquire(vouchersArray, token!!);
-            const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
-            setMember({ ...member, vouchers: updatedVouchers });
-            setAcquirementSuccessModalVisible(true)
+            const data = await handleIntegrationMP(vouchersArray)
+            if(!data) {
+                return console.log("ocurrio un error")
+            }
+            const response = openBrowserAsync(data)
+            console.log("response open browser async", response)
+            // await Api.acquire(vouchersArray, token!!);
+            // const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
+            // setMember({ ...member, vouchers: updatedVouchers });
+            // setAcquirementSuccessModalVisible(true)
         } catch (error: any) {
             Alert.alert("Error al adquirir vouchers", error.message || "Ocurrió un error inesperado.");
         }

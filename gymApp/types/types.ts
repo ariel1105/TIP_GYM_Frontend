@@ -1,4 +1,5 @@
 import { darkColors } from "@/theme/colors";
+import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
 export type DiaSemana = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 export type AppColors = typeof darkColors;
@@ -27,6 +28,7 @@ export interface Voucher {
   activityName?: string;
   acquisitionDate?: Date,
   acquisitionWay?: String
+  price?: Float
 }
 
 export interface Member {

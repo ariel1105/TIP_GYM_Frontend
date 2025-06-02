@@ -1,6 +1,6 @@
 import { Suscriptions, Voucher } from '@/types/types';
 import Axios from 'axios';
-export const API_BASE_URL = "http://192.168.1.37:8080/";
+export const API_BASE_URL = "http://192.168.1.36:8080/";
 
 const axiosInstance = Axios.create({
     baseURL: API_BASE_URL,
