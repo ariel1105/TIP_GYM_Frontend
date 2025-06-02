@@ -8,7 +8,6 @@ import { ReservationModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
 import { useRouter } from "expo-router";
 
-  
 const ReservationModal: React.FC<ReservationModalProps> = ({
   visible,
   onClose,
@@ -172,8 +171,5 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     </Modal>
   );
 }
-  
 
 export default ReservationModal
-
-

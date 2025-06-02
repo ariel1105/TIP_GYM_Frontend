@@ -161,6 +161,7 @@ export default function ActivitiesScreen() {
   const handleActivitySelect = async (activity: Activity) => {
     setSelectedActivity(activity);
     updateRemainingVouchers()
+    setReservationModalVisible(true);
     try {
       const response = await Api.getTurn(activity.id);
       setTurns(response.data);
@@ -174,7 +175,7 @@ export default function ActivitiesScreen() {
         );
       }
     }
-    setReservationModalVisible(true);
+
   };
 
 
