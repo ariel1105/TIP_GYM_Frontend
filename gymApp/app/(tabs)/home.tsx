@@ -1,10 +1,9 @@
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Routes } from "../constants/routes";
 import useColors from "@/theme/useColors";
-import Api from "@/services/Api";
 import { AppColors } from "@/types/types";
 import { useAuth } from "@/context/AuthContext";
 

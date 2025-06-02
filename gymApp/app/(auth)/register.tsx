@@ -1,6 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
-import { View, TextInput, Button, Text, Pressable, StyleSheet, TouchableOpacity } from "react-native";
+import { View, TextInput, Text, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import useColors from "@/theme/useColors";
 import { Routes } from "../constants/routes";
@@ -29,18 +29,15 @@ export default function Register() {
     } else if (password.length < 6) {
       newErrors.password = "La contraseña debe tener al menos 6 caracteres.";
     }
-  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
     setErrors({});
     try {
       await register({ name, username, password });
     } catch (err: any) {
       const message = err.message;
-    
       if (message.includes(`el usuario ${username} ya esta registrado`)) {
         setErrors({ username: message });
       } else {
@@ -48,9 +45,6 @@ export default function Register() {
       }
     }
   };
-  
-  
-  
 
   const styles = StyleSheet.create({
     container: {

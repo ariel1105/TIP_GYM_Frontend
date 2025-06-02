@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert, Switch } from "react-native";
+import { View, Text, StyleSheet, FlatList, Switch } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
 import Api from "@/services/Api";
@@ -32,7 +32,6 @@ export default function ActivitiesScreen() {
 
   const { modalVisible, setModalVisible, modalProps, openModal } = useModal();
 
-
   const params = useLocalSearchParams();
   const activityIdFromParams = params.activityId as string | undefined;
 
@@ -41,7 +40,6 @@ export default function ActivitiesScreen() {
   const { token, member, setMember } = useAuth();
 
   const router = useRouter();
-
 
   const getTurnosByActivity = (activityName: string) => {
     return turns.filter(turn => turn.activityName === activityName);
@@ -66,7 +64,6 @@ export default function ActivitiesScreen() {
   },[member, params])
 
   useEffect(() => {
-
     const fetchActivities = async () => {
       try {
         const response = await Api.getActivities()
@@ -91,13 +88,13 @@ export default function ActivitiesScreen() {
   }, []);
 
   useEffect(() => {
-  if (activityIdFromParams && activities.length > 0) {
-    const matchedActivity = activities.find(act => act.id.toString() === activityIdFromParams);
-    if (matchedActivity) {
-      handleActivitySelect(matchedActivity);
+    if (activityIdFromParams && activities.length > 0) {
+      const matchedActivity = activities.find(act => act.id.toString() === activityIdFromParams);
+      if (matchedActivity) {
+        handleActivitySelect(matchedActivity);
+      }
     }
-  }
-}, [activityIdFromParams, activities]);
+  }, [activityIdFromParams, activities]);
 
 
   const toggleDia = (dia: DiaSemana) => {
@@ -105,9 +102,7 @@ export default function ActivitiesScreen() {
     const nuevaLista = estaFijado
       ? fijados.filter(d => d !== dia)
       : [...fijados, dia];
-  
     const turnosActivity = getTurnosByActivity(selectedActivity?.nombre || "");
-  
     const nuevasFechas: string[] = turnosActivity
       .filter(turn => {
         const diaTurno = moment(turn.datetime).format("dddd") as DiaSemana;
@@ -123,7 +118,6 @@ export default function ActivitiesScreen() {
         }
         return false;
       });
-  
     setFijados(nuevaLista);
     setSelectedDates((prev) => {
       if (!estaFijado) {
@@ -133,13 +127,10 @@ export default function ActivitiesScreen() {
       }
     });
   };
-  
 
   const getActivityDays = () => {
     if (!selectedActivity) return [];
-  
     const turnosActivity = getTurnosByActivity(selectedActivity.nombre);
-  
     return turnosActivity.map(turno => {
       const fecha = moment(turno.datetime).format("YYYY-MM-DD");
       return {
@@ -196,7 +187,6 @@ export default function ActivitiesScreen() {
   const disabledDates = (date: Date): boolean => {
     const today = moment().startOf("day");
     const targetStr = moment(date).format("YYYY-MM-DD");
-
     return moment(date).isBefore(today, 'day') || !enabledDateStrings.has(targetStr);
   };
 
@@ -207,10 +197,6 @@ export default function ActivitiesScreen() {
     ))
   : [];
 
-  // const handleDateChange = (date: Date) => {
-  //   const dateStr = moment(date).format("YYYY-MM-DD");
-  //   handleDateClick(dateStr);
-  // };
   const handleDateChange = (date: any) => {
     const formatted = moment(date).format("YYYY-MM-DD");
     if (!enabledDates().includes(formatted)) {
@@ -233,27 +219,6 @@ export default function ActivitiesScreen() {
       turnosActivity.map(turno => moment(turno.datetime).format("YYYY-MM-DD"))
     ));
   };
-    // const formattedDate = moment(date).format("YYYY-MM-DD");
-
-
-    // setSelectedDates(prevSelected => {
-    //   if (prevSelected.includes(formattedDate)) {
-    //     // Si ya está seleccionada, la quitamos
-    //     return prevSelected.filter(d => d !== formattedDate);
-    //   } else {
-    //     // Si no está seleccionada, la agregamos
-    //     return [...prevSelected, formattedDate];
-    //   }
-    // });
-
-    
-  // const handleDateClick = (date: string) => {
-  //   if (selectedDates.includes(date)) {
-  //     setSelectedDates(prev => prev.filter(d => d !== date));
-  //   } else {
-  //     setSelectedDates(prev => [...prev, date]);
-  //   }
-  // };
 
   const handleConfirmPress = async () => {
     if (!member || !token) {
@@ -266,18 +231,15 @@ export default function ActivitiesScreen() {
       );
       return;
     }
-
     const selectedTurnIds = turns
       .filter(turn => {
         const fecha = moment(turn.datetime).format("YYYY-MM-DD");
         return selectedDates.includes(fecha) && turn.activityName === selectedActivity?.nombre;
       })
       .map(turn => turn.id);
-
     const suscriptionBody : Suscriptions = {
       turnIds: selectedTurnIds
     };
-    
     if (selectedDates.length === 0) {
       openModal(
         "Sin turnos",
@@ -286,7 +248,6 @@ export default function ActivitiesScreen() {
       );
       return;
     }
-
     try {
       await Api.suscribe(suscriptionBody, token);
       const updatedVouchers = [...member.vouchers];
@@ -303,7 +264,6 @@ export default function ActivitiesScreen() {
         goToInscriptions,
         "Ver inscripcion",
       );
-
     } catch (error: any) {
       const errorMessage = error?.response?.data || error?.message || "";
       if (errorMessage.includes("No hay voucher válido para la actividad")) {
@@ -333,7 +293,6 @@ export default function ActivitiesScreen() {
     closeModal()
     router.push(Routes.Login)
   }
-  
 
   const styles = StyleSheet.create({
     containerList: {

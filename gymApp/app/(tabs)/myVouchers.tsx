@@ -5,7 +5,6 @@ import { useAuth } from '@/context/AuthContext';
 import Api from '@/services/Api';
 import { Voucher } from '@/types/types';
 import AlertModal from '@/components/AlertModal';
-import ReservationModal from '@/components/ReservationModal';
 import { router } from 'expo-router';
 import { Routes } from '../constants/routes';
 
@@ -61,7 +60,6 @@ export default function MyVouchers() {
 
   const groupedVouchers = useMemo(() => {
     const groups: Record<string, Voucher & { totalClasses: number }> = {};
-
     vouchers.forEach(v => {
       const key = `${v.activityId}-${v.acquisitionWay}-${v.acquisitionDate}`;
       if (!groups[key]) {
@@ -75,9 +73,8 @@ export default function MyVouchers() {
         groups[key].remainingClasses = groups[key].totalClasses;
       }
     });
-
-  return Object.values(groups);
-}, [vouchers]);
+    return Object.values(groups);
+  }, [vouchers]);
 
 
   const styles = StyleSheet.create({

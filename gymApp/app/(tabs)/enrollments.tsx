@@ -183,7 +183,6 @@ export default function Enrollments() {
         action={handleCancelEnrollment}
         actionButton="Cancelar turno"
       />
-
       <AlertModal
         visible={voucherModalVisible}
         onClose={() => setVoucherModalVisible(false)}
@@ -197,7 +196,6 @@ export default function Enrollments() {
             : ''
         }
       />
-
       <AlertModal
         visible={errorModalVisible}
         onClose={handleCloseErrorModal}

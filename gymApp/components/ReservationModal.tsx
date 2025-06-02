@@ -1,14 +1,12 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet} from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import ScheduleSelector from "./ScheduleSelector";
 import CheckboxDias from "./CheckboxDias";
 import { ReservationModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
-import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
-import Api from "@/services/Api";
 
   
 const ReservationModal: React.FC<ReservationModalProps> = ({
@@ -31,12 +29,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 }) => {
 
   const colors= useColors()
-  const {member, token, setMember} = useAuth()
   const router = useRouter();
-
-  useEffect(() => {
-    
-  }, [token])
 
   const styles = StyleSheet.create({
     modalContainer: {

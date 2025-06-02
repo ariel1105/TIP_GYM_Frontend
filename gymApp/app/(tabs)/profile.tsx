@@ -12,7 +12,6 @@ export default function Profile() {
   const { member } = useAuth();
   const { logout } = useAuth();
 
-
   const memberName = member?.name;
 
   const [showLoginModal, setShowLoginModal] = useState(false);

@@ -2,7 +2,7 @@ import ActivityCard from "@/components/ActivityCard";
 import Api from "@/services/Api";
 import { Activity, AppColors, Voucher } from "@/types/types";
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Alert, Switch, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, FlatList, Alert, TouchableOpacity } from "react-native";
 import getLocalImage from "../utils/getImages";
 import useColors from "@/theme/useColors";
 import VoucherCounter from "@/components/VoucherCounter";
@@ -10,7 +10,6 @@ import { useAuth } from "@/context/AuthContext";
 import AlertModal from "@/components/AlertModal";
 import { router, useFocusEffect } from "expo-router";
 import { Routes } from "../constants/routes";
-
 
 export default function VouchersScreen () {
 
@@ -68,7 +67,6 @@ export default function VouchersScreen () {
                 remainingClasses: amount,
                 amount,
             }));
-
         try {
             await Api.acquire(vouchersArray, token!!);
             const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
@@ -96,7 +94,6 @@ export default function VouchersScreen () {
     const closeAcquirementSuccessModal = () => {
         setAcquirementSuccessModalVisible(false)
     }
-
 
     const styles = StyleSheet.create({
         containerList: {
