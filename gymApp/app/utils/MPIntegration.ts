@@ -20,7 +20,15 @@ export const handleIntegrationMP = async (vouchersSelected: Voucher[]) => {
     unit_price: voucher.price,
     }));
 
-    const preferencia = { items };
+    const preferencia = {
+      items,
+      back_urls: {
+        success: "myapp://payment-success",
+        failure: "myapp://payment-failure",
+        pending: "myapp://payment-pending"
+      },
+      auto_return: "approved"
+    };
 
 
   try {

@@ -21,7 +21,7 @@ export default function VouchersScreen () {
     const [acquirementSuccessModalVisible, setAcquirementSuccessModalVisible] = useState(false);
     
     const colors : AppColors = useColors()
-    const { member, setMember, token } = useAuth();
+    const { member, setMember, token, setVouchersArray } = useAuth();
 
     useEffect(() => {
         const fetchActivities = async () => {
@@ -80,6 +80,8 @@ export default function VouchersScreen () {
                 return console.log("ocurrio un error")
             }
             const response = openBrowserAsync(data)
+            setVouchersArray(vouchersArray); // <-- este es el que declaraste en AuthContext
+
             console.log("response open browser async", response)
             // await Api.acquire(vouchersArray, token!!);
             // const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];

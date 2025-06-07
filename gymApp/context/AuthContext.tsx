@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
 import Api from "@/services/Api";
-import { Member, UserLogin, UserRegister } from "@/types/types";
+import { Member, UserLogin, UserRegister, Voucher } from "@/types/types";
 import { Routes } from "@/app/constants/routes";
 import { Alert } from "react-native";
 
@@ -13,6 +13,10 @@ type AuthContextType = {
   login: (user: UserLogin) => Promise<void>;
   register: (user: UserRegister) => Promise<void>;
   logout: () => void;
+  vouchersArray: Voucher[];
+  setVouchersArray: (v: Voucher[]) => void;
+  acquirementSuccessModalVisible: boolean;
+  setAcquirementSuccessModalVisible: (visible: boolean) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -20,6 +24,9 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [member, setMember] = useState<Member | null>(null)
+  const [vouchersArray, setVouchersArray] = useState<Voucher[]>([]);
+  const [acquirementSuccessModalVisible, setAcquirementSuccessModalVisible] = useState(false);
+
   const router = useRouter()
 
   useEffect(() => {
@@ -80,7 +87,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ member, setMember, token, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        member,
+        setMember,
+        token,
+        login,
+        register,
+        logout,
+        vouchersArray,
+        setVouchersArray,
+        acquirementSuccessModalVisible,
+        setAcquirementSuccessModalVisible,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
