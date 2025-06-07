@@ -5,6 +5,8 @@ import Api from "@/services/Api";
 import { Member, UserLogin, UserRegister } from "@/types/types";
 import { Routes } from "@/app/constants/routes";
 import { Alert } from "react-native";
+import { registerForPushNotificationsAsync } from "@/services/notifications/registerForPushNotificationsAsync";
+import * as Notifications from 'expo-notifications';
 
 type AuthContextType = {
   setMember: any
@@ -40,6 +42,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await SecureStore.setItemAsync("token", token);
       const memberResponse = await Api.getMember(token);
       setMember(memberResponse.data);
+      await registerForPushNotificationsAsync();
+      const { status } = await Notifications.getPermissionsAsync();
+      console.log("Permiso notificaciones:", status);
       router.push(Routes.Home);
     } catch (error: any) {
       if (!error.response) {
