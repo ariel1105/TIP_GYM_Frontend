@@ -17,6 +17,7 @@ const WeeklyCalendarView: React.FC = () => {
   const { setMember, member, token } = useAuth();
   const colors = useColors();
   const [turnsToShow, setTurnsToShow] = useState<Turn[]>([]);
+  const [selectedActivityName, setSelectedActivityName] = useState<string>("");
 
   const { modalVisible, setModalVisible, modalProps, openModal } = useModal();
 
@@ -44,7 +45,7 @@ const WeeklyCalendarView: React.FC = () => {
       disabled: isPast || isUserSubscribed || isFull,
       activityId: turn.activityId, 
     };
-    });      
+    });
     setEvents(formattedEvents);
   };
 
@@ -99,6 +100,7 @@ const WeeklyCalendarView: React.FC = () => {
       openModal("Turno no disponible", "Este turno no está disponible.", () => setModalVisible(false));
       return;
     }
+    setSelectedActivityName(event.title)
     const remaining = getRemainingClasses(event.activityId);
     const mensaje = `${event.title} - ${moment(event.start).format("dddd HH:mm")}\nVouchers restantes: ${remaining}`;
     openModal(
@@ -201,6 +203,8 @@ const WeeklyCalendarView: React.FC = () => {
         closeButton={modalProps.closeButton || "Cerrar"}
         linkText={modalProps.linkText}
         linkAction={modalProps.linkAction}
+        showSubscribe={true}
+        onSubscribePress={() => console.log(`Suscripción a:`, selectedActivityName)}
       />
     </View>
   );

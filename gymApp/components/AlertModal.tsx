@@ -2,8 +2,9 @@ import React from "react";
 import { Modal, View, Text, StyleSheet, TouchableOpacity, Pressable } from "react-native";
 import { AlertModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, actionButton, linkText, linkAction}: AlertModalProps) => {
+const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, actionButton, linkText, linkAction, showSubscribe = false, onSubscribePress}: AlertModalProps) => {
 
   const colors = useColors()
 
@@ -62,12 +63,39 @@ const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, act
       flexWrap: "wrap",
       width: "100%"
     },
+    bellContainer: {
+      position: "absolute",
+      top: 10,
+      right: 10,
+      zIndex: 1,
+    },
+
+    bellBackground: {
+      backgroundColor: colors.primary,
+      borderRadius: 20,
+      padding: 6,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
   });
   
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.container}>
+          {showSubscribe && 
+            <TouchableOpacity
+              style={styles.bellContainer}
+              onPress={onSubscribePress}
+            >
+              <View style={styles.bellBackground}>
+                <Icon name="bell" size={16} color="black" />
+              </View>
+            </TouchableOpacity>
+
+          }
+          
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{mensaje}</Text>
           {linkText && linkAction && (

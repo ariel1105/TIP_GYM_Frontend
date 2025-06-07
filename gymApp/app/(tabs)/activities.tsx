@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Switch } from "react-native";
+import { View, Text, StyleSheet, FlatList, Switch, TouchableOpacity } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
 import Api from "@/services/Api";
@@ -15,6 +15,7 @@ import WeeklyCalendarView from "@/components/WeeklyCalendarView";
 import { Routes } from "../constants/routes";
 import { useLocalSearchParams } from "expo-router";
 import { useModal } from "@/hooks/useModal";
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 
 export default function ActivitiesScreen() {
@@ -330,17 +331,17 @@ export default function ActivitiesScreen() {
   return (
     <View style={showWeeklyView ? styles.containerCalendar : styles.containerList}>
       <Text style={styles.title}>Selecciona una Actividad</Text>
-        {/* Toggle */}
-        <View style={styles.switchContainer}>
-          <Text style={styles.switchText}>Vista semanal</Text>
-          <Switch
-            value={showWeeklyView}
-            onValueChange={() => setShowWeeklyView(prev => !prev)}
-            trackColor={{ false: colors.grayLight, true: colors.primary }}
-            thumbColor={showWeeklyView ? colors.secondary : colors.white}
-          />
-        </View>
-
+      {/* Toggle */}
+      <View style={styles.switchContainer}>
+        <Text style={styles.switchText}>Vista semanal</Text>
+        <Switch
+          value={showWeeklyView}
+          onValueChange={() => setShowWeeklyView(prev => !prev)}
+          trackColor={{ false: colors.grayLight, true: colors.primary }}
+          thumbColor={showWeeklyView ? colors.secondary : colors.white}
+        />
+      </View>
+      
       {showWeeklyView ? (
         <WeeklyCalendarView />
       ) : (
@@ -351,7 +352,12 @@ export default function ActivitiesScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
             renderItem={({ item }) => (
-              <ActivityCard item={item} onPress={handleActivitySelect} />
+              <ActivityCard 
+                item={item} 
+                onPress={handleActivitySelect}
+                onSubscribePress={(activity) => console.log("Suscripción a:", activity.nombre)}
+
+              />
             )}
           />
           <ReservationModal

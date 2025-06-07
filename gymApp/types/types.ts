@@ -72,7 +72,8 @@ export interface Event {
 export interface ActivityCardProps {
   item: Activity;
   onPress: (activity: Activity) => void;
-  width?: number
+  width?: number;
+  onSubscribePress: (activity: Activity) => void
 }
 
 export interface CheckboxDiasProps {
@@ -123,4 +124,6 @@ export interface AlertModalProps {
   actionButton?: string;
   linkText?: string;
   linkAction?: () => void;
+  showSubscribe?: boolean;
+  onSubscribePress?: () => void
 }
