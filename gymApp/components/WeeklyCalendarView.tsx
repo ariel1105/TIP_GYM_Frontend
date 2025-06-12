@@ -68,7 +68,7 @@ const WeeklyCalendarView: React.FC = () => {
       return;
     }
     try {
-      await Api.suscribe({ turnIds: [turnId] }, token);
+      await Api.subscribe({ turnIds: [turnId] }, token);
       const updatedVouchers = [...member.vouchers];
       const voucherToUpdate = updatedVouchers.find(v => v.activityId === event.activityId && (v.remainingClasses ?? 0) > 0);
       if (voucherToUpdate) voucherToUpdate.remainingClasses = (voucherToUpdate.remainingClasses ?? 1) - 1;

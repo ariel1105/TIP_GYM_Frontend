@@ -1,16 +1,20 @@
 import { useEffect, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
-import { Client } from '@stomp/stompjs';
+import { Client, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { sendLocalNotification } from '@/services/notifications/sendLocalNotification';
 
-export function useTurnNotification(activityId: number) {
+export function useTurnNotification(activityIds: number[]) {
   const clientRef = useRef<Client | null>(null);
+  const subscriptionsRef = useRef<StompSubscription[]>([]);
 
   useEffect(() => {
+    // Si no hay actividades para suscribirse, no conectar al WebSocket
+    if (!activityIds || activityIds.length === 0) return;
+
     Notifications.requestPermissionsAsync();
 
-    const socket = new SockJS('http://192.168.0.19:8080/ws');
+    const socket = new SockJS('http://192.168.1.49:8080/ws');
     const client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
@@ -20,11 +24,18 @@ export function useTurnNotification(activityId: number) {
     client.onConnect = () => {
       console.log('WebSocket conectado');
 
-      client.subscribe(`/topic/activity/${activityId}`, (message) => {
-        const turns = JSON.parse(message.body);
-        console.log('Turnos nuevos recibidos:', turns);
+      activityIds.forEach((activityId) => {
+        const sub = client.subscribe(`/topic/activity/${activityId}`, (message) => {
+          const turns = JSON.parse(message.body);
+          console.log(`Turnos nuevos recibidos para actividad ${activityId}:`, turns);
 
-        sendLocalNotification("Nuevos turnos disponibles", `Se han agregado ${turns.length} nuevos turnos a la actividad.`);
+          sendLocalNotification(
+            'Nuevos turnos disponibles',
+            `Se han agregado ${turns.length} nuevos turnos a la actividad ${activityId}.`
+          );
+        });
+
+        subscriptionsRef.current.push(sub);
       });
     };
 
@@ -32,7 +43,10 @@ export function useTurnNotification(activityId: number) {
     clientRef.current = client;
 
     return () => {
+      subscriptionsRef.current.forEach((sub) => sub.unsubscribe());
+      subscriptionsRef.current = [];
       client.deactivate();
     };
-  }, [activityId]);
+  }, [JSON.stringify(activityIds)]);
+
 }

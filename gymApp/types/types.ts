@@ -37,7 +37,8 @@ export interface Member {
   username: string;
   registrations: Registration[];
   turns: number[]
-  vouchers: Voucher[]
+  vouchers: Voucher[];
+  activitiesToNotify: number[]
 }
 
 export interface UserLogin {
@@ -73,7 +74,8 @@ export interface ActivityCardProps {
   item: Activity;
   onPress: (activity: Activity) => void;
   width?: number;
-  onSubscribePress: (activity: Activity) => void
+  onSubscribePress: (activity: Activity) => void;
+  isSubscribed?: boolean
 }
 
 export interface CheckboxDiasProps {

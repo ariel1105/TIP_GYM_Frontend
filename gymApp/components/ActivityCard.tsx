@@ -4,7 +4,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ item: activity, onPress, width = 350, onSubscribePress }) => {
+const ActivityCard: React.FC<ActivityCardProps> = ({ item: activity, onPress, width = 350, onSubscribePress, isSubscribed }) => {
   const colors = useColors();
 
   const styles = StyleSheet.create({
@@ -69,7 +69,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ item: activity, onPress, wi
             activeOpacity={0.7}
           >
             <Icon
-              name={activity.subscribed ? "bell-slash" : "bell"}
+              name={isSubscribed ? "bell-slash" : "bell"}
               style={styles.subscribeIcon}
               solid
             />

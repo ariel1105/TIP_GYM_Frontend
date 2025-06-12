@@ -251,7 +251,7 @@ export default function ActivitiesScreen() {
       return;
     }
     try {
-      await Api.suscribe(suscriptionBody, token);
+      await Api.subscribe(suscriptionBody, token);
       const updatedVouchers = [...member.vouchers];
       const voucherToUpdate = updatedVouchers.find(v => v.activityId === selectedActivity!!.id && (v.remainingClasses ?? 0) > 0);
       if (voucherToUpdate) voucherToUpdate.remainingClasses = (voucherToUpdate.remainingClasses ?? 1) - 1;
@@ -276,7 +276,6 @@ export default function ActivitiesScreen() {
     }
   };
   
-  
   const closeModal = () => {
     setFijados([]);
     setSelectedHorario(null);
@@ -295,6 +294,29 @@ export default function ActivitiesScreen() {
     closeModal()
     router.push(Routes.Login)
   }
+
+  const handleNotificationSubscription = async (activity: Activity) => {
+    if (!token || !member) {
+      openModal("Atención", "Necesitás estar logueado para suscribirte a notificaciones.", () => router.push(Routes.Login), "Loguearme");
+      return;
+    }
+    try {
+      console.log("Suscribiéndose a actividad", activity.id, "con token", token);
+      const response = await Api.subscribeToNotifications(activity.id, token);
+      console.log("Respuesta de suscripción:", response);
+      const updatedActivitiesToNotify = member.activitiesToNotify
+        ? [...member.activitiesToNotify, activity.id]
+        : [activity.id];
+      setMember({
+        ...member,
+        activitiesToNotify: updatedActivitiesToNotify,
+      });
+      openModal("Suscripción exitosa", `Te suscribiste a notificaciones de: ${activity.nombre}`, () => setModalVisible(false));
+    } catch (error: any) {
+      console.log(error)
+      openModal("Error", "No se pudo realizar la suscripción", () => setModalVisible(false));
+    }
+  };
 
   const styles = StyleSheet.create({
     containerList: {
@@ -352,12 +374,12 @@ export default function ActivitiesScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
             renderItem={({ item }) => (
-              <ActivityCard 
-                item={item} 
-                onPress={handleActivitySelect}
-                onSubscribePress={(activity) => console.log("Suscripción a:", activity.nombre)}
-
-              />
+                <ActivityCard 
+                  item={item} 
+                  onPress={handleActivitySelect}
+                  onSubscribePress={handleNotificationSubscription}
+                  isSubscribed={member?.activitiesToNotify?.includes(item.id)}
+                />
             )}
           />
           <ReservationModal

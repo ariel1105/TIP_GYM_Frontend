@@ -1,6 +1,6 @@
 import { Suscriptions, Voucher } from '@/types/types';
 import Axios from 'axios';
-export const API_BASE_URL = "http://192.168.1.36:8080/";
+export const API_BASE_URL = "http://192.168.1.49:8080/";
 
 const axiosInstance = Axios.create({
     baseURL: API_BASE_URL,
@@ -54,7 +54,7 @@ const getVouchers = async(token: string) => {
     });
 }
 
-const suscribe = async (body : Suscriptions, token: string) => {
+const subscribe = async (body : Suscriptions, token: string) => {
     return post(`${API_BASE_URL}member/subscribe`, body, {
         headers: { "Authorization": `Bearer ${token}`} 
    });
@@ -71,6 +71,15 @@ const acquire = async (body: Voucher[], token: string) => {
         headers: { "Authorization": `Bearer ${token}`} 
    });
 }
+
+const subscribeToNotifications = async (activityId: number, token: string) => {
+  const url = `${API_BASE_URL}member/notificactionSubscribe/${activityId}`;
+  console.log(url);
+  console.log(token);
+  return post(url, null, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
 
 const login = async (body: { username: string; password: string }) => {
     return post(`${API_BASE_URL}login`, body); 
@@ -91,9 +100,10 @@ const Api = {
     getRegistrations,
     getMember,
     getVouchers,
-    suscribe,
+    subscribe,
     unsubscribe,
     acquire,
+    subscribeToNotifications,
     login,
     register
 }
