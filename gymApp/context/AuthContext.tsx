@@ -41,6 +41,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loadToken();
   }, []);
 
+  useEffect(()=> {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+  },[])
+
   const login = async ({ username, password }: UserLogin) => {
     try {
       const response = await Api.login({ username, password });
