@@ -4,7 +4,7 @@ import { AlertModalProps } from "@/types/types";
 import useColors from "@/theme/useColors";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, actionButton, linkText, linkAction, showSubscribe = false, onSubscribePress}: AlertModalProps) => {
+const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, actionButton, linkText, linkAction, activityId, showSubscribe = false, onSubscribePress, isSubscribed}: AlertModalProps) => {
 
   const colors = useColors()
 
@@ -69,13 +69,16 @@ const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, act
       right: 10,
       zIndex: 1,
     },
-
     bellBackground: {
       backgroundColor: colors.primary,
       borderRadius: 20,
       padding: 6,
       alignItems: "center",
       justifyContent: "center",
+    },
+    subscribeIcon: {
+      color: colors.black,
+      fontSize: 16,
     },
 
   });
@@ -87,10 +90,14 @@ const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, act
           {showSubscribe && 
             <TouchableOpacity
               style={styles.bellContainer}
-              onPress={onSubscribePress}
+              onPress={() => onSubscribePress?.(activityId!!)}
             >
               <View style={styles.bellBackground}>
-                <Icon name="bell" size={16} color="black" />
+                <Icon
+                  name={isSubscribed ? "bell-slash" : "bell"}
+                  style={styles.subscribeIcon}
+                  solid
+                />
               </View>
             </TouchableOpacity>
 

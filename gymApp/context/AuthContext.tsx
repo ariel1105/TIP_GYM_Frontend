@@ -9,7 +9,7 @@ import { registerForPushNotificationsAsync } from "@/services/notifications/regi
 import * as Notifications from 'expo-notifications';
 
 type AuthContextType = {
-  setMember: any
+  setMember: React.Dispatch<React.SetStateAction<Member | null>>;
   member: Member | null
   token: string | null;
   login: (user: UserLogin) => Promise<void>;

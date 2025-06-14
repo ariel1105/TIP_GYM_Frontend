@@ -31,7 +31,7 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
     fetchMemberTurns();
   }, [member]);
 
-  const horarios = getTurnosByActivity(selectedActivity.nombre)
+  const horarios = getTurnosByActivity(selectedActivity.name)
     .filter((turno) =>
       moment(turno.datetime).format("YYYY-MM-DD") === fechaSeleccionada
     );

@@ -6,9 +6,9 @@ export type AppColors = typeof darkColors;
 
 export interface Activity {
   id: number;
-  nombre: string;
-  descripcion: string;
-  imagen: any;
+  name: string;
+  description: string;
+  image: any;
 }
 
 export interface Registration {
@@ -71,10 +71,10 @@ export interface Event {
 }
 
 export interface ActivityCardProps {
-  item: Activity;
+  activity: Activity;
   onPress: (activity: Activity) => void;
   width?: number;
-  onSubscribePress: (activity: Activity) => void;
+  onSubscribePress?: (activity: Activity) => void;
   isSubscribed?: boolean
 }
 
@@ -127,5 +127,7 @@ export interface AlertModalProps {
   linkText?: string;
   linkAction?: () => void;
   showSubscribe?: boolean;
-  onSubscribePress?: () => void
+  activityId?:number;
+  onSubscribePress?: (activityId: number) => void;
+  isSubscribed?: boolean
 }

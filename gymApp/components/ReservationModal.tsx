@@ -104,7 +104,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         </TouchableOpacity>
 
         <Text style={styles.modalTitle}>Reserva tu Actividad</Text>
-        <Text style={styles.activityName}>{selectedActivity?.nombre}</Text>
+        <Text style={styles.activityName}>{selectedActivity?.name}</Text>
 
         <CalendarPicker
           minDate={new Date()}

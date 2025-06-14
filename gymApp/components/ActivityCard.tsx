@@ -4,7 +4,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ item: activity, onPress, width = 350, onSubscribePress, isSubscribed }) => {
+const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress, width = 350, onSubscribePress, isSubscribed }) => {
   const colors = useColors();
 
   const styles = StyleSheet.create({
@@ -56,10 +56,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ item: activity, onPress, wi
 
   return (
     <TouchableOpacity onPress={() => onPress(activity)} style={styles.card}>
-      <Image source={activity.imagen} style={styles.image} />
+      <Image source={activity.image} style={styles.image} />
       <View style={styles.overlayContainer}>
         <View style={styles.titleContainer}>
-          <Text style={styles.cardTitle} numberOfLines={1}>{activity.nombre}</Text>
+          <Text style={styles.cardTitle} numberOfLines={1}>{activity.name}</Text>
         </View>
 
         {onSubscribePress && (

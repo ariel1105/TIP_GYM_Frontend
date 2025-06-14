@@ -28,11 +28,14 @@ export function useTurnNotification(activityIds: number[]) {
         const sub = client.subscribe(`/topic/activity/${activityId}`, (message) => {
           const turns = JSON.parse(message.body);
           console.log(`Turnos nuevos recibidos para actividad ${activityId}:`, turns);
+          if (turns.length > 0) {
+            const activityName = turns[0].activityName;
+            sendLocalNotification(
+              'Nuevos turnos disponibles',
+              `Se han agregado ${turns.length} nuevos turnos a la actividad ${activityName}.`
+            );
+          }
 
-          sendLocalNotification(
-            'Nuevos turnos disponibles',
-            `Se han agregado ${turns.length} nuevos turnos a la actividad ${activityId}.`
-          );
         });
 
         subscriptionsRef.current.push(sub);

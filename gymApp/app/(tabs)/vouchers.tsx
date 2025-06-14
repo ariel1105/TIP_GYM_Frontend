@@ -27,11 +27,11 @@ export default function VouchersScreen () {
         const fetchActivities = async () => {
             try {
                 const response = await Api.getActivities()
-                const ActivityesConImagen: Activity[] = response.data.map((Activity: any) => ({
-                    id: Activity.id,
-                    nombre: Activity.name,
-                    descripcion: Activity.description,
-                    imagen: getLocalImage(Activity.name),
+                const ActivityesConImagen: Activity[] = response.data.map((activity: Activity) => ({
+                    id: activity.id,
+                    name: activity.name,
+                    description: activity.description,
+                    image: getLocalImage(activity.name),
                 }));
                 
                 setActivities(ActivityesConImagen);
@@ -68,7 +68,7 @@ export default function VouchersScreen () {
                 const activity = activities.find((a) => a.id === parseInt(activityId));
                 return {
                     activityId: parseInt(activityId),
-                    activityName: activity?.nombre || "Nombre no encontrado",
+                    activityName: activity?.name || "Nombre no encontrado",
                     remainingClasses: amount,
                     amount,
                     price: 10.0,
@@ -150,20 +150,21 @@ export default function VouchersScreen () {
             <Text style={styles.title}>Sumá todos los vouchers que quieras adquirir</Text>
             <FlatList
                 data={activities}
-                keyExtractor={(item) => item.nombre}
+                keyExtractor={(activity) => activity.name}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.listContent}
-                renderItem={({ item }) => (
+                renderItem={({ item: activity }) => (
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-                        <ActivityCard item={item} onPress={() => {}} width={250} />
-                        <VoucherCounter 
-                            count={selectedVouchers[item.id] || 0} 
-                            onIncrease={() => handleVoucherChange(item.id, 1)} 
-                            onDecrease={() => handleVoucherChange(item.id, -1)} 
-                        />
+                    <ActivityCard activity={activity} onPress={() => {}} width={250} />
+                    <VoucherCounter 
+                        count={selectedVouchers[activity.id] || 0} 
+                        onIncrease={() => handleVoucherChange(activity.id, 1)} 
+                        onDecrease={() => handleVoucherChange(activity.id, -1)} 
+                    />
                     </View>
                 )}
             />
+
             <View style={styles.footer}>
                 <TouchableOpacity onPress={handleConfirm}>
                     <Text style={styles.confirmButtonText}>Confirmar</Text>

@@ -1,5 +1,5 @@
 import { Suscriptions, Voucher } from '@/types/types';
-import Axios from 'axios';
+import Axios, { AxiosRequestConfig } from 'axios';
 export const API_BASE_URL = "http://192.168.1.49:8080/";
 
 const axiosInstance = Axios.create({
@@ -7,21 +7,14 @@ const axiosInstance = Axios.create({
     timeout: 2000,
   });
 
-const get = (url: any, header?: any) => 
+const get = (url: string, header?: AxiosRequestConfig<any> | undefined) => 
     axiosInstance.get(url, header)
-        .then((response) => response )
-        .catch((error) => Promise.reject(error))
 
-const post = (url: any, body: any, header?:any) => 
+const post = (url: string, body?: any, header?: AxiosRequestConfig<any> | undefined) => 
     axiosInstance.post(url, body, header)
-        .then((response) => response)
-        .catch((error) => Promise.reject(error))
         
-const del = (url: any, header?: any) => 
+const del = (url: string, header?: AxiosRequestConfig<any> | undefined) => 
     axiosInstance.delete(url, header)
-        .then((response) => response)
-        .catch((error) => Promise.reject(error))
-
 
 const getActivities = () => {
     return get(`${API_BASE_URL}activities`);
