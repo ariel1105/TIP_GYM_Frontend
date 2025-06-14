@@ -114,27 +114,38 @@ const WeeklyCalendarView: React.FC = () => {
     );
   };
 
-    const handleNotificationSubscription = async (activityId: number) => {
+  const handleNotificationSubscription = async (activityId: number) => {
     if (!token || !member) {
-      openModal("Atención", "Necesitás estar logueado para suscribirte a notificaciones.", () => router.push(Routes.Login), "Loguearme");
+      openModal(
+        "Atención",
+        "Necesitás estar logueado para suscribirte a notificaciones.",
+        () => router.push(Routes.Login),
+        "Loguearme"
+      );
       return;
     }
+    const isSubscribed = member.activitiesToNotify?.includes(activityId);
     try {
-      console.log("Suscribiéndose a actividad", activityId, "con token", token);
       const response = await Api.subscribeToNotifications(activityId, token);
-      console.log("Respuesta de suscripción:", response);
-      const activity = (await Api.getActivities()).data.find((a: Activity) => a.id === activityId);
-      const updatedActivitiesToNotify = member.activitiesToNotify
-        ? [...member.activitiesToNotify, activity.id]
-        : [activity.id];
+      const updatedActivitiesToNotify = isSubscribed
+        ? member.activitiesToNotify.filter(id => id !== activityId) // desuscripción
+        : [...(member.activitiesToNotify || []), activityId];       // suscripción
       setMember({
         ...member,
         activitiesToNotify: updatedActivitiesToNotify,
       });
-      openModal("Suscripción exitosa", `Te suscribiste a notificaciones de: ${activity.name}`, () => setModalVisible(false));
+      const activity = (await Api.getActivities()).data.find((a: Activity) => a.id === activityId);
+
+      openModal(
+        isSubscribed ? "Desuscripción exitosa" : "Suscripción exitosa",
+        isSubscribed
+          ? `Ya no recibirás notificaciones de: ${activity.name}`
+          : `Te suscribiste a notificaciones de: ${activity.name}`,
+        () => setModalVisible(false)
+      );
     } catch (error: any) {
-      console.log(error)
-      openModal("Error", "No se pudo realizar la suscripción", () => setModalVisible(false));
+      console.log(error);
+      openModal("Error", "No se pudo actualizar la suscripción", () => setModalVisible(false));
     }
   };
 

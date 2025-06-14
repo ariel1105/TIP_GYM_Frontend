@@ -297,24 +297,34 @@ export default function ActivitiesScreen() {
 
   const handleNotificationSubscription = async (activity: Activity) => {
     if (!token || !member) {
-      openModal("Atención", "Necesitás estar logueado para suscribirte a notificaciones.", () => router.push(Routes.Login), "Loguearme");
+      openModal(
+        "Atención",
+        "Necesitás estar logueado para suscribirte a notificaciones.",
+        () => router.push(Routes.Login),
+        "Loguearme"
+      );
       return;
     }
+    const isSubscribed = member.activitiesToNotify?.includes(activity.id);
     try {
-      console.log("Suscribiéndose a actividad", activity.id, "con token", token);
       const response = await Api.subscribeToNotifications(activity.id, token);
-      console.log("Respuesta de suscripción:", response);
-      const updatedActivitiesToNotify = member.activitiesToNotify
-        ? [...member.activitiesToNotify, activity.id]
-        : [activity.id];
+      const updatedActivitiesToNotify = isSubscribed
+        ? member.activitiesToNotify.filter(id => id !== activity.id) // desuscripción
+        : [...(member.activitiesToNotify || []), activity.id];       // suscripción
       setMember({
         ...member,
         activitiesToNotify: updatedActivitiesToNotify,
       });
-      openModal("Suscripción exitosa", `Te suscribiste a notificaciones de: ${activity.name}`, () => setModalVisible(false));
+      openModal(
+        isSubscribed ? "Desuscripción exitosa" : "Suscripción exitosa",
+        isSubscribed
+          ? `Ya no recibirás notificaciones de: ${activity.name}`
+          : `Te suscribiste a notificaciones de: ${activity.name}`,
+        () => setModalVisible(false)
+      );
     } catch (error: any) {
-      console.log(error)
-      openModal("Error", "No se pudo realizar la suscripción", () => setModalVisible(false));
+      console.log(error);
+      openModal("Error", "No se pudo actualizar la suscripción", () => setModalVisible(false));
     }
   };
 
