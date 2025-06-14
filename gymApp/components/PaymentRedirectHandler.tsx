@@ -13,7 +13,7 @@ export const PaymentRedirectHandler = () => {
         try {
           await Api.acquire(vouchersArray, token!!);
           const updatedVouchers = [...(member!!.vouchers || []), ...vouchersArray];
-          setMember({ ...member, vouchers: updatedVouchers });
+          setMember({ ...member!!, vouchers: updatedVouchers });
           setAcquirementSuccessModalVisible(true);
         } catch (error: any) {
           Alert.alert("Error al adquirir vouchers", error.message || "Ocurrió un error inesperado.");

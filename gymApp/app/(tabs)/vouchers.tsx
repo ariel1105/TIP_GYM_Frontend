@@ -83,10 +83,10 @@ export default function VouchersScreen () {
             setVouchersArray(vouchersArray); // <-- este es el que declaraste en AuthContext
 
             console.log("response open browser async", response)
-            // await Api.acquire(vouchersArray, token!!);
-            // const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
-            // setMember({ ...member, vouchers: updatedVouchers });
-            // setAcquirementSuccessModalVisible(true)
+            await Api.acquire(vouchersArray, token!!);
+            const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
+            setMember({ ...member, vouchers: updatedVouchers });
+            setAcquirementSuccessModalVisible(true)
         } catch (error: any) {
             Alert.alert("Error al adquirir vouchers", error.message || "Ocurrió un error inesperado.");
         }
