@@ -6,6 +6,7 @@ export const Routes: Record<string, Route> = {
   Profile: "/(tabs)/profile",
   Home: "/(tabs)/home",
   Machines: "/(tabs)/machines",
+  MyMachinePlan:"/(tabs)/myMachinePlan",
   Vouchers:"/(tabs)/vouchers",
   MyVouchers:"/(tabs)/myVouchers",
   Login: "/(auth)/login",

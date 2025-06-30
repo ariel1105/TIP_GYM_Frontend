@@ -9,7 +9,7 @@ import { registerForPushNotificationsAsync } from "@/services/notifications/regi
 import * as Notifications from 'expo-notifications';
 
 type AuthContextType = {
-  setMember: React.Dispatch<React.SetStateAction<Member | null>>;
+  setMember: any;
   member: Member | null
   token: string | null;
   login: (user: UserLogin) => Promise<void>;
@@ -21,7 +21,7 @@ type AuthContextType = {
   setAcquirementSuccessModalVisible: (visible: boolean) => void;
 };
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);

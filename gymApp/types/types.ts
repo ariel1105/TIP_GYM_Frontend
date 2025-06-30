@@ -67,7 +67,13 @@ export interface Event {
   start: Date;
   end: Date;
   disabled?:boolean,
-  activityId: number; 
+  activityId?: number; 
+}
+
+export interface MachineAccessLog {
+  id: number;
+  memberId: number;
+  accessTime: string; // ISO 8601 date
 }
 
 export interface ActivityCardProps {
