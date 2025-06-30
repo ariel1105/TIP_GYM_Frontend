@@ -5,7 +5,7 @@ import moment from "moment";
 import Api from "@/services/Api";
 import { useAuth } from "@/context/AuthContext";
 import useColors from "@/theme/useColors";
-import { Turn, Event } from "@/types/types";
+import { Turn, Event, Activity } from "@/types/types";
 import AlertModal from "./AlertModal";
 import { router } from "expo-router";
 import { Routes } from "@/app/constants/routes";
@@ -17,6 +17,7 @@ const WeeklyCalendarView: React.FC = () => {
   const { setMember, member, token } = useAuth();
   const colors = useColors();
   const [turnsToShow, setTurnsToShow] = useState<Turn[]>([]);
+  const [selectedActivityId, setSelectedActivityId] = useState<number>();
 
   const { modalVisible, setModalVisible, modalProps, openModal } = useModal();
 
@@ -44,7 +45,7 @@ const WeeklyCalendarView: React.FC = () => {
       disabled: isPast || isUserSubscribed || isFull,
       activityId: turn.activityId, 
     };
-    });      
+    });
     setEvents(formattedEvents);
   };
 
@@ -67,7 +68,7 @@ const WeeklyCalendarView: React.FC = () => {
       return;
     }
     try {
-      await Api.suscribe({ turnIds: [turnId] }, token);
+      await Api.subscribe({ turnIds: [turnId] }, token);
       const updatedVouchers = [...member.vouchers];
       const voucherToUpdate = updatedVouchers.find(v => v.activityId === event.activityId && (v.remainingClasses ?? 0) > 0);
       if (voucherToUpdate) voucherToUpdate.remainingClasses = (voucherToUpdate.remainingClasses ?? 1) - 1;
@@ -99,6 +100,7 @@ const WeeklyCalendarView: React.FC = () => {
       openModal("Turno no disponible", "Este turno no está disponible.", () => setModalVisible(false));
       return;
     }
+    setSelectedActivityId(event.activityId)
     const remaining = getRemainingClasses(event.activityId);
     const mensaje = `${event.title} - ${moment(event.start).format("dddd HH:mm")}\nVouchers restantes: ${remaining}`;
     openModal(
@@ -110,6 +112,41 @@ const WeeklyCalendarView: React.FC = () => {
       "Adquirir vouchers",
       () => router.push(Routes.Vouchers) 
     );
+  };
+
+  const handleNotificationSubscription = async (activityId: number) => {
+    if (!token || !member) {
+      openModal(
+        "Atención",
+        "Necesitás estar logueado para suscribirte a notificaciones.",
+        () => router.push(Routes.Login),
+        "Loguearme"
+      );
+      return;
+    }
+    const isSubscribed = member.activitiesToNotify?.includes(activityId);
+    try {
+      const response = await Api.subscribeToNotifications(activityId, token);
+      const updatedActivitiesToNotify = isSubscribed
+        ? member.activitiesToNotify.filter(id => id !== activityId) // desuscripción
+        : [...(member.activitiesToNotify || []), activityId];       // suscripción
+      setMember({
+        ...member,
+        activitiesToNotify: updatedActivitiesToNotify,
+      });
+      const activity = (await Api.getActivities()).data.find((a: Activity) => a.id === activityId);
+
+      openModal(
+        isSubscribed ? "Desuscripción exitosa" : "Suscripción exitosa",
+        isSubscribed
+          ? `Ya no recibirás notificaciones de: ${activity.name}`
+          : `Te suscribiste a notificaciones de: ${activity.name}`,
+        () => setModalVisible(false)
+      );
+    } catch (error: any) {
+      console.log(error);
+      openModal("Error", "No se pudo actualizar la suscripción", () => setModalVisible(false));
+    }
   };
 
   const styles = StyleSheet.create({
@@ -201,6 +238,10 @@ const WeeklyCalendarView: React.FC = () => {
         closeButton={modalProps.closeButton || "Cerrar"}
         linkText={modalProps.linkText}
         linkAction={modalProps.linkAction}
+        showSubscribe={true}
+        activityId={selectedActivityId}
+        onSubscribePress={handleNotificationSubscription}
+        isSubscribed={member?.activitiesToNotify?.includes(selectedActivityId!!)}
       />
     </View>
   );

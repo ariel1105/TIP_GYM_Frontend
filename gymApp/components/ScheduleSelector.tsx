@@ -31,7 +31,7 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
     fetchMemberTurns();
   }, [member]);
 
-  const horarios = getTurnosByActivity(selectedActivity.nombre)
+  const horarios = getTurnosByActivity(selectedActivity.name)
     .filter((turno) =>
       moment(turno.datetime).format("YYYY-MM-DD") === fechaSeleccionada
     );
@@ -40,7 +40,7 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
     return turn.capacity - turn.enrolled === 0;
   };
 
-  const isSuscribed = (turnId: number) => {
+  const isSubscribed = (turnId: number) => {
     return memberTurns.includes(turnId);
   };
 
@@ -96,13 +96,13 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
         const hour = moment(turn.datetime).add(3, 'hours').format("HH:mm");
         const isSelected = selectedHorario === hour;
         const full = isFull(turn);
-        const alreadySuscribed = isSuscribed(turn.id);
+        const alreadySubscribed = isSubscribed(turn.id);
 
         return (
           <TouchableOpacity
             key={turn.id}
             onPress={() => setSelectedHorario(hour)}
-            disabled={full || alreadySuscribed}
+            disabled={full || alreadySubscribed}
             style={[
               styles.scheduleItemContainer,
               isSelected && styles.scheduleItemSelected,
@@ -112,9 +112,9 @@ const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
             <Text style={[
               styles.scheduleItemText,
               isSelected && styles.scheduleItemTextSelected,
-              (full || alreadySuscribed) && styles.disabledItemText,
+              (full || alreadySubscribed) && styles.disabledItemText,
             ]}>
-              {hour} {alreadySuscribed
+              {hour} {alreadySubscribed
                 ? "(Ya estás inscripto en este turno)"
                 : `(Cupos disponibles: ${turn.capacity - turn.enrolled})`}
             </Text>

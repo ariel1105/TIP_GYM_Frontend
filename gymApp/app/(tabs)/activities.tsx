@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Switch } from "react-native";
+import { View, Text, StyleSheet, FlatList, Switch, TouchableOpacity } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
 import Api from "@/services/Api";
@@ -15,6 +15,7 @@ import WeeklyCalendarView from "@/components/WeeklyCalendarView";
 import { Routes } from "../constants/routes";
 import { useLocalSearchParams } from "expo-router";
 import { useModal } from "@/hooks/useModal";
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 
 export default function ActivitiesScreen() {
@@ -67,11 +68,11 @@ export default function ActivitiesScreen() {
     const fetchActivities = async () => {
       try {
         const response = await Api.getActivities()
-        const ActivityesConImagen: Activity[] = response.data.map((Activity: any) => ({
-          id: Activity.id,
-          nombre: Activity.name,
-          descripcion: Activity.description,
-          imagen: getLocalImage(Activity.name),
+        const ActivityesConImagen: Activity[] = response.data.map((activity: Activity) => ({
+          id: activity.id,
+          name: activity.name,
+          descripcion: activity.description,
+          image: getLocalImage(activity.name),
         }));
         
         setActivities(ActivityesConImagen);
@@ -102,7 +103,7 @@ export default function ActivitiesScreen() {
     const nuevaLista = estaFijado
       ? fijados.filter(d => d !== dia)
       : [...fijados, dia];
-    const turnosActivity = getTurnosByActivity(selectedActivity?.nombre || "");
+    const turnosActivity = getTurnosByActivity(selectedActivity?.name || "");
     const nuevasFechas: string[] = turnosActivity
       .filter(turn => {
         const diaTurno = moment(turn.datetime).format("dddd") as DiaSemana;
@@ -130,7 +131,7 @@ export default function ActivitiesScreen() {
 
   const getActivityDays = () => {
     if (!selectedActivity) return [];
-    const turnosActivity = getTurnosByActivity(selectedActivity.nombre);
+    const turnosActivity = getTurnosByActivity(selectedActivity.name);
     return turnosActivity.map(turno => {
       const fecha = moment(turno.datetime).format("YYYY-MM-DD");
       return {
@@ -180,7 +181,7 @@ export default function ActivitiesScreen() {
 
 
   const enabledDateStrings = new Set(
-    getTurnosByActivity(selectedActivity?.nombre || "").map(turn =>
+    getTurnosByActivity(selectedActivity?.name || "").map(turn =>
       moment(turn.datetime).format("YYYY-MM-DD")
     )
   );
@@ -193,12 +194,12 @@ export default function ActivitiesScreen() {
 
   const diasHabilitados: DiaSemana[] = selectedActivity
   ? Array.from(new Set(
-      getTurnosByActivity(selectedActivity.nombre)
+      getTurnosByActivity(selectedActivity.name)
         .map(t => moment(t.datetime).format("dddd") as DiaSemana)
     ))
   : [];
 
-  const handleDateChange = (date: any) => {
+  const handleDateChange = (date: Date) => {
     const formatted = moment(date).format("YYYY-MM-DD");
     if (!enabledDates().includes(formatted)) {
       return; // No hacer nada si no está habilitada
@@ -214,7 +215,7 @@ export default function ActivitiesScreen() {
 
   const enabledDates = () => {
     if (!selectedActivity) return [];
-    const turnosActivity = getTurnosByActivity(selectedActivity.nombre);
+    const turnosActivity = getTurnosByActivity(selectedActivity.name);
 
     return Array.from(new Set(
       turnosActivity.map(turno => moment(turno.datetime).format("YYYY-MM-DD"))
@@ -235,7 +236,7 @@ export default function ActivitiesScreen() {
     const selectedTurnIds = turns
       .filter(turn => {
         const fecha = moment(turn.datetime).format("YYYY-MM-DD");
-        return selectedDates.includes(fecha) && turn.activityName === selectedActivity?.nombre;
+        return selectedDates.includes(fecha) && turn.activityName === selectedActivity?.name;
       })
       .map(turn => turn.id);
     const suscriptionBody : Suscriptions = {
@@ -250,13 +251,13 @@ export default function ActivitiesScreen() {
       return;
     }
     try {
-      await Api.suscribe(suscriptionBody, token);
+      await Api.subscribe(suscriptionBody, token);
       const updatedVouchers = [...member.vouchers];
       const voucherToUpdate = updatedVouchers.find(v => v.activityId === selectedActivity!!.id && (v.remainingClasses ?? 0) > 0);
       if (voucherToUpdate) voucherToUpdate.remainingClasses = (voucherToUpdate.remainingClasses ?? 1) - 1;
       setMember({
         ...member,
-        turns: [...member.turns, selectedTurnIds],
+        turns: [...member.turns, ...selectedTurnIds],
         vouchers: updatedVouchers
       });
       openModal(
@@ -274,7 +275,6 @@ export default function ActivitiesScreen() {
       }
     }
   };
-  
   
   const closeModal = () => {
     setFijados([]);
@@ -294,6 +294,39 @@ export default function ActivitiesScreen() {
     closeModal()
     router.push(Routes.Login)
   }
+
+  const handleNotificationSubscription = async (activity: Activity) => {
+    if (!token || !member) {
+      openModal(
+        "Atención",
+        "Necesitás estar logueado para suscribirte a notificaciones.",
+        () => router.push(Routes.Login),
+        "Loguearme"
+      );
+      return;
+    }
+    const isSubscribed = member.activitiesToNotify?.includes(activity.id);
+    try {
+      const response = await Api.subscribeToNotifications(activity.id, token);
+      const updatedActivitiesToNotify = isSubscribed
+        ? member.activitiesToNotify.filter(id => id !== activity.id) // desuscripción
+        : [...(member.activitiesToNotify || []), activity.id];       // suscripción
+      setMember({
+        ...member,
+        activitiesToNotify: updatedActivitiesToNotify,
+      });
+      openModal(
+        isSubscribed ? "Desuscripción exitosa" : "Suscripción exitosa",
+        isSubscribed
+          ? `Ya no recibirás notificaciones de: ${activity.name}`
+          : `Te suscribiste a notificaciones de: ${activity.name}`,
+        () => setModalVisible(false)
+      );
+    } catch (error: any) {
+      console.log(error);
+      openModal("Error", "No se pudo actualizar la suscripción", () => setModalVisible(false));
+    }
+  };
 
   const styles = StyleSheet.create({
     containerList: {
@@ -330,28 +363,33 @@ export default function ActivitiesScreen() {
   return (
     <View style={showWeeklyView ? styles.containerCalendar : styles.containerList}>
       <Text style={styles.title}>Selecciona una Actividad</Text>
-        {/* Toggle */}
-        <View style={styles.switchContainer}>
-          <Text style={styles.switchText}>Vista semanal</Text>
-          <Switch
-            value={showWeeklyView}
-            onValueChange={() => setShowWeeklyView(prev => !prev)}
-            trackColor={{ false: colors.grayLight, true: colors.primary }}
-            thumbColor={showWeeklyView ? colors.secondary : colors.white}
-          />
-        </View>
-
+      {/* Toggle */}
+      <View style={styles.switchContainer}>
+        <Text style={styles.switchText}>Vista semanal</Text>
+        <Switch
+          value={showWeeklyView}
+          onValueChange={() => setShowWeeklyView(prev => !prev)}
+          trackColor={{ false: colors.grayLight, true: colors.primary }}
+          thumbColor={showWeeklyView ? colors.secondary : colors.white}
+        />
+      </View>
+      
       {showWeeklyView ? (
         <WeeklyCalendarView />
       ) : (
         <>
           <FlatList
             data={activities}
-            keyExtractor={(item) => item.nombre}
+            keyExtractor={(activity) => activity.name}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
-            renderItem={({ item }) => (
-              <ActivityCard item={item} onPress={handleActivitySelect} />
+            renderItem={({ item: activity }) => (
+                <ActivityCard 
+                  activity={activity} 
+                  onPress={handleActivitySelect}
+                  onSubscribePress={handleNotificationSubscription}
+                  isSubscribed={member?.activitiesToNotify?.includes(activity.id)}
+                />
             )}
           />
           <ReservationModal

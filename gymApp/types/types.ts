@@ -1,13 +1,14 @@
 import { darkColors } from "@/theme/colors";
+import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
 export type DiaSemana = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 export type AppColors = typeof darkColors;
 
 export interface Activity {
   id: number;
-  nombre: string;
-  descripcion: string;
-  imagen: any;
+  name: string;
+  description: string;
+  image: any;
 }
 
 export interface Registration {
@@ -27,6 +28,7 @@ export interface Voucher {
   activityName?: string;
   acquisitionDate?: Date,
   acquisitionWay?: String
+  price?: Float
 }
 
 export interface Member {
@@ -35,7 +37,8 @@ export interface Member {
   username: string;
   registrations: Registration[];
   turns: number[]
-  vouchers: Voucher[]
+  vouchers: Voucher[];
+  activitiesToNotify: number[]
 }
 
 export interface UserLogin {
@@ -68,9 +71,11 @@ export interface Event {
 }
 
 export interface ActivityCardProps {
-  item: Activity;
+  activity: Activity;
   onPress: (activity: Activity) => void;
-  width?: number
+  width?: number;
+  onSubscribePress?: (activity: Activity) => void;
+  isSubscribed?: boolean
 }
 
 export interface CheckboxDiasProps {
@@ -121,4 +126,8 @@ export interface AlertModalProps {
   actionButton?: string;
   linkText?: string;
   linkAction?: () => void;
+  showSubscribe?: boolean;
+  activityId?:number;
+  onSubscribePress?: (activityId: number) => void;
+  isSubscribed?: boolean
 }

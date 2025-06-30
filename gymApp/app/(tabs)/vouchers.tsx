@@ -10,6 +10,8 @@ import { useAuth } from "@/context/AuthContext";
 import AlertModal from "@/components/AlertModal";
 import { router, useFocusEffect } from "expo-router";
 import { Routes } from "../constants/routes";
+import { handleIntegrationMP } from "../utils/MPIntegration";
+import {openBrowserAsync} from "expo-web-browser"
 
 export default function VouchersScreen () {
 
@@ -19,17 +21,17 @@ export default function VouchersScreen () {
     const [acquirementSuccessModalVisible, setAcquirementSuccessModalVisible] = useState(false);
     
     const colors : AppColors = useColors()
-    const { member, setMember, token } = useAuth();
+    const { member, setMember, token, setVouchersArray } = useAuth();
 
     useEffect(() => {
         const fetchActivities = async () => {
             try {
                 const response = await Api.getActivities()
-                const ActivityesConImagen: Activity[] = response.data.map((Activity: any) => ({
-                    id: Activity.id,
-                    nombre: Activity.name,
-                    descripcion: Activity.description,
-                    imagen: getLocalImage(Activity.name),
+                const ActivityesConImagen: Activity[] = response.data.map((activity: Activity) => ({
+                    id: activity.id,
+                    name: activity.name,
+                    description: activity.description,
+                    image: getLocalImage(activity.name),
                 }));
                 
                 setActivities(ActivityesConImagen);
@@ -62,12 +64,25 @@ export default function VouchersScreen () {
         }
         const vouchersArray: Voucher[] = Object.entries(selectedVouchers)
             .filter(([_, amount]) => amount > 0)
-            .map(([activityId, amount]) => ({
-                activityId: parseInt(activityId),
-                remainingClasses: amount,
-                amount,
-            }));
+            .map(([activityId, amount]) => {
+                const activity = activities.find((a) => a.id === parseInt(activityId));
+                return {
+                    activityId: parseInt(activityId),
+                    activityName: activity?.name || "Nombre no encontrado",
+                    remainingClasses: amount,
+                    amount,
+                    price: 10.0,
+                };
+            });
         try {
+            const data = await handleIntegrationMP(vouchersArray)
+            if(!data) {
+                return console.log("ocurrio un error")
+            }
+            const response = openBrowserAsync(data)
+            setVouchersArray(vouchersArray); // <-- este es el que declaraste en AuthContext
+
+            console.log("response open browser async", response)
             await Api.acquire(vouchersArray, token!!);
             const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
             setMember({ ...member, vouchers: updatedVouchers });
@@ -135,20 +150,21 @@ export default function VouchersScreen () {
             <Text style={styles.title}>Sumá todos los vouchers que quieras adquirir</Text>
             <FlatList
                 data={activities}
-                keyExtractor={(item) => item.nombre}
+                keyExtractor={(activity) => activity.name}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.listContent}
-                renderItem={({ item }) => (
+                renderItem={({ item: activity }) => (
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-                        <ActivityCard item={item} onPress={() => {}} width={250} />
-                        <VoucherCounter 
-                            count={selectedVouchers[item.id] || 0} 
-                            onIncrease={() => handleVoucherChange(item.id, 1)} 
-                            onDecrease={() => handleVoucherChange(item.id, -1)} 
-                        />
+                    <ActivityCard activity={activity} onPress={() => {}} width={250} />
+                    <VoucherCounter 
+                        count={selectedVouchers[activity.id] || 0} 
+                        onIncrease={() => handleVoucherChange(activity.id, 1)} 
+                        onDecrease={() => handleVoucherChange(activity.id, -1)} 
+                    />
                     </View>
                 )}
             />
+
             <View style={styles.footer}>
                 <TouchableOpacity onPress={handleConfirm}>
                     <Text style={styles.confirmButtonText}>Confirmar</Text>

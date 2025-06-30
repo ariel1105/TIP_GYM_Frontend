@@ -1,27 +1,20 @@
 import { Suscriptions, Voucher } from '@/types/types';
-import Axios from 'axios';
-export const API_BASE_URL = "http://192.168.1.37:8080/";
+import Axios, { AxiosRequestConfig } from 'axios';
+export const API_BASE_URL = "http://192.168.1.49:8080/";
 
 const axiosInstance = Axios.create({
     baseURL: API_BASE_URL,
     timeout: 2000,
   });
 
-const get = (url: any, header?: any) => 
+const get = (url: string, header?: AxiosRequestConfig<any> | undefined) => 
     axiosInstance.get(url, header)
-        .then((response) => response )
-        .catch((error) => Promise.reject(error))
 
-const post = (url: any, body: any, header?:any) => 
+const post = (url: string, body?: any, header?: AxiosRequestConfig<any> | undefined) => 
     axiosInstance.post(url, body, header)
-        .then((response) => response)
-        .catch((error) => Promise.reject(error))
         
-const del = (url: any, header?: any) => 
+const del = (url: string, header?: AxiosRequestConfig<any> | undefined) => 
     axiosInstance.delete(url, header)
-        .then((response) => response)
-        .catch((error) => Promise.reject(error))
-
 
 const getActivities = () => {
     return get(`${API_BASE_URL}activities`);
@@ -54,7 +47,7 @@ const getVouchers = async(token: string) => {
     });
 }
 
-const suscribe = async (body : Suscriptions, token: string) => {
+const subscribe = async (body : Suscriptions, token: string) => {
     return post(`${API_BASE_URL}member/subscribe`, body, {
         headers: { "Authorization": `Bearer ${token}`} 
    });
@@ -71,6 +64,15 @@ const acquire = async (body: Voucher[], token: string) => {
         headers: { "Authorization": `Bearer ${token}`} 
    });
 }
+
+const subscribeToNotifications = async (activityId: number, token: string) => {
+  const url = `${API_BASE_URL}member/notificactionSubscribe/${activityId}`;
+  console.log(url);
+  console.log(token);
+  return post(url, null, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
 
 const login = async (body: { username: string; password: string }) => {
     return post(`${API_BASE_URL}login`, body); 
@@ -91,9 +93,10 @@ const Api = {
     getRegistrations,
     getMember,
     getVouchers,
-    suscribe,
+    subscribe,
     unsubscribe,
     acquire,
+    subscribeToNotifications,
     login,
     register
 }

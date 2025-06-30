@@ -2,17 +2,23 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
 import Api from "@/services/Api";
-import { Member, UserLogin, UserRegister } from "@/types/types";
+import { Member, UserLogin, UserRegister, Voucher } from "@/types/types";
 import { Routes } from "@/app/constants/routes";
 import { Alert } from "react-native";
+import { registerForPushNotificationsAsync } from "@/services/notifications/registerForPushNotificationsAsync";
+import * as Notifications from 'expo-notifications';
 
 type AuthContextType = {
-  setMember: any
+  setMember: React.Dispatch<React.SetStateAction<Member | null>>;
   member: Member | null
   token: string | null;
   login: (user: UserLogin) => Promise<void>;
   register: (user: UserRegister) => Promise<void>;
   logout: () => void;
+  vouchersArray: Voucher[];
+  setVouchersArray: (v: Voucher[]) => void;
+  acquirementSuccessModalVisible: boolean;
+  setAcquirementSuccessModalVisible: (visible: boolean) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -20,6 +26,9 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [member, setMember] = useState<Member | null>(null)
+  const [vouchersArray, setVouchersArray] = useState<Voucher[]>([]);
+  const [acquirementSuccessModalVisible, setAcquirementSuccessModalVisible] = useState(false);
+
   const router = useRouter()
 
   useEffect(() => {
@@ -32,6 +41,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loadToken();
   }, []);
 
+  useEffect(()=> {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+  },[])
+
   const login = async ({ username, password }: UserLogin) => {
     try {
       const response = await Api.login({ username, password });
@@ -40,6 +59,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await SecureStore.setItemAsync("token", token);
       const memberResponse = await Api.getMember(token);
       setMember(memberResponse.data);
+      await registerForPushNotificationsAsync();
+      const { status } = await Notifications.getPermissionsAsync();
+      console.log("Permiso notificaciones:", status);
       router.push(Routes.Home);
     } catch (error: any) {
       if (!error.response) {
@@ -80,7 +102,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ member, setMember, token, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        member,
+        setMember,
+        token,
+        login,
+        register,
+        logout,
+        vouchersArray,
+        setVouchersArray,
+        acquirementSuccessModalVisible,
+        setAcquirementSuccessModalVisible,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
