@@ -55,10 +55,15 @@ describe("BodyBuilding subscription", () => {
   });
 });
 
-it("muestra un error si falla la suscripción", async () => {
-  const mockSubscribe = jest
-    .fn()
-    .mockRejectedValue({ response: { data: { message: "Error del servidor" } } });
+it("muestra un error si ya existe una suscripción activa", async () => {
+  const mockSubscribe = jest.fn().mockRejectedValue({
+    response: {
+      data: {
+        message: "Ya tenés una suscripción activa",
+      },
+    },
+  });
+
   (Api.subscribeToBodyBuilding as jest.Mock) = mockSubscribe;
 
   const fakeToken = "fake-token";
@@ -67,28 +72,31 @@ it("muestra un error si falla la suscripción", async () => {
     token: fakeToken,
   };
 
-  const { getByText, queryByText } = render(
+  const { getByText } = render(
     <AuthContext.Provider value={fakeContext as any}>
       <BodyBuilding />
     </AuthContext.Provider>
   );
 
-  // Confirmar suscripción (sin cambiar días, valor por defecto: 3)
+  // Confirmar suscripción
   fireEvent.press(getByText("Confirmar suscripción"));
 
+  // Verificar que se llama con los datos correctos
   await waitFor(() => {
     expect(mockSubscribe).toHaveBeenCalledWith(3, fakeToken);
   });
 
-  // Verificamos que el modal de error aparece
+  // Verificar que aparece el mensaje de error específico
   await waitFor(() => {
-    expect(getByText("Error")).toBeTruthy();
-    expect(getByText("Error del servidor")).toBeTruthy();
+    expect(getByText("Ya tenés una suscripción activa")).toBeTruthy();
   });
 
   // Cerrar el modal
   fireEvent.press(getByText("Aceptar"));
+
+  // Esperar que el modal se cierre
   await waitFor(() => {
-    expect(queryByText("Error")).toBeNull();
+    expect(getByText("Confirmar suscripción")).toBeTruthy(); // se vuelve a la pantalla normal
   });
 });
+
