@@ -6,11 +6,11 @@ import {
   StyleSheet,
   ImageBackground,
 } from "react-native";
-import { useAuth } from "@/context/AuthContext";
-import Api from "@/services/Api";
-import AlertModal from "@/components/AlertModal";
-import useColors from "@/theme/useColors";
-import { lightColors } from "@/theme/colors";
+import { useAuth } from "../../context/AuthContext";
+import Api from "../../services/Api";
+import AlertModal from "../../components/AlertModal";
+import useColors from "../../theme/useColors";
+import { lightColors } from "../../theme/colors";
 
 export default function BodyBuilding() {
   const { token } = useAuth();

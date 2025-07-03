@@ -1,10 +1,10 @@
-import { ScheduleSelectorProps, Turn } from "@/types/types";
+import { ScheduleSelectorProps, Turn } from "../types/types";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import Api from "@/services/Api";
-import useColors from "@/theme/useColors";
-import { useAuth } from "@/context/AuthContext";
+import Api from "../services/Api";
+import useColors from "../theme/useColors";
+import { useAuth } from "../context/AuthContext";
 
 const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
   selectedActivity,

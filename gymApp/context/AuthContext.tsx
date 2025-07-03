@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
-import Api from "@/services/Api";
-import { Member, UserLogin, UserRegister, Voucher } from "@/types/types";
-import { Routes } from "@/app/constants/routes";
+import Api from "../services/Api";
+import { Member, UserLogin, UserRegister, Voucher } from "../types/types";
+import { Routes } from "../app/constants/routes";
 import { Alert } from "react-native";
-import { registerForPushNotificationsAsync } from "@/services/notifications/registerForPushNotificationsAsync";
+import { registerForPushNotificationsAsync } from "../services/notifications/registerForPushNotificationsAsync";
 import * as Notifications from 'expo-notifications';
 
 type AuthContextType = {

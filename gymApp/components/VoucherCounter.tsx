@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import useColors from "@/theme/useColors";
+import useColors from "../theme/useColors";
 
 interface VoucherCounterProps {
   count: number;

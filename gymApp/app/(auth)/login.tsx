@@ -1,8 +1,8 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
 import { View, TextInput, Text, Pressable, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
-import useColors from "@/theme/useColors";
+import useColors from "../../theme/useColors";
 import { Routes } from "../constants/routes";
 
 export default function Login() {

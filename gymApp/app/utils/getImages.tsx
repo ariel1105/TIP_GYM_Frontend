@@ -1,4 +1,4 @@
-import { imageMap } from "@/assets/images/imageMap";
+import { imageMap } from "../../assets/images/imageMap";
 
 const getLocalImage = (name: string) => {
     const key = name.toLowerCase().replace(/\s+/g, "").trim();

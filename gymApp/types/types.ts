@@ -1,4 +1,4 @@
-import { darkColors } from "@/theme/colors";
+import { darkColors } from "../theme/colors";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
 export type DiaSemana = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";

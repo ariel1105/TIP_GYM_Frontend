@@ -2,21 +2,19 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, FlatList, Switch, TouchableOpacity } from "react-native";
 import moment from "moment";
 import { useEffect } from "react";
-import Api from "@/services/Api";
+import Api from "../../services/Api";
 import getLocalImage from "../utils/getImages";
-import ActivityCard from "@/components/ActivityCard";
-import ReservationModal from "@/components/ReservationModal";
+import ActivityCard from "../../components/ActivityCard";
+import ReservationModal from "../../components/ReservationModal";
 import { Activity, DiaSemana, Suscriptions, Turn, AppColors } from "../../types/types";
-import AlertModal from "@/components/AlertModal";
-import useColors from "@/theme/useColors";
-import { useAuth } from "@/context/AuthContext";
+import AlertModal from "../../components/AlertModal";
+import useColors from "../../theme/useColors";
+import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
-import WeeklyCalendarView from "@/components/WeeklyCalendarView";
+import WeeklyCalendarView from "../../components/WeeklyCalendarView";
 import { Routes } from "../constants/routes";
 import { useLocalSearchParams } from "expo-router";
-import { useModal } from "@/hooks/useModal";
-import Icon from 'react-native-vector-icons/FontAwesome5';
-
+import { useModal } from "../../hooks/useModal";
 
 export default function ActivitiesScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);

@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, View, Text, StyleSheet, TouchableOpacity, Pressable } from "react-native";
-import { AlertModalProps } from "@/types/types";
-import useColors from "@/theme/useColors";
+import { AlertModalProps } from "../types/types";
+import useColors from "../theme/useColors";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
 const AlertModal = ({ visible, title, mensaje, onClose, closeButton, action, actionButton, linkText, linkAction, activityId, showSubscribe = false, onSubscribePress, isSubscribed}: AlertModalProps) => {

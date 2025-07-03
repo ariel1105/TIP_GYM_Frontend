@@ -3,10 +3,10 @@ import { useRouter } from "expo-router";
 import React from "react";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Routes } from "../constants/routes";
-import useColors from "@/theme/useColors";
-import { AppColors } from "@/types/types";
-import { useAuth } from "@/context/AuthContext";
-import { useTurnNotification } from "@/hooks/userTurnNotification";
+import useColors from "../../theme/useColors";
+import { AppColors } from "../../types/types";
+import { useAuth } from "../../context/AuthContext";
+import { useTurnNotification } from "../../hooks/userTurnNotification";
 
 export default function HomeScreen() {
   const router = useRouter()

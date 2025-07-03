@@ -1,6 +1,6 @@
-import { CheckboxDiasProps } from "@/types/types";
+import { CheckboxDiasProps } from "../types/types";
 import { View, Text, TouchableOpacity, StyleSheet} from "react-native";
-import {darkColors} from "@/theme/colors";
+import {darkColors} from "../theme/colors";
 
 const CheckboxDias: React.FC<CheckboxDiasProps> = ({ diasSemana, diasHabilitados, fijados, toggleDia }) => (
     <View style={styles.checkboxContainer}>

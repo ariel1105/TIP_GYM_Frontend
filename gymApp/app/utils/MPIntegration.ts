@@ -1,4 +1,4 @@
-import { Voucher } from "@/types/types"
+import { Voucher } from "../../types/types"
 import { ACCESS_TOKEN } from "../../config.json"
 
 export const handleIntegrationMP = async (vouchersSelected: Voucher[]) => {

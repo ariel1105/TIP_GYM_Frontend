@@ -1,8 +1,8 @@
 import * as Linking from "expo-linking";
 import { useEffect } from "react";
 import { Alert } from "react-native";
-import Api from "@/services/Api";
-import { useAuth } from "@/context/AuthContext";
+import Api from "../services/Api";
+import { useAuth } from "../context/AuthContext";
 
 export const PaymentRedirectHandler = () => {
   const { vouchersArray, token, member, setMember, setAcquirementSuccessModalVisible } = useAuth();

@@ -1,5 +1,5 @@
-import useColors from "@/theme/useColors";
-import { ActivityCardProps } from "@/types/types";
+import useColors from "../theme/useColors";
+import { ActivityCardProps } from "../types/types";
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome5';
