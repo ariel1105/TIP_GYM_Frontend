@@ -31,6 +31,13 @@ export interface Voucher {
   price?: Float
 }
 
+export interface BodyBuildingSubscription {
+  member: string;
+  acquisitionDate: string;
+  dueDate: string;
+  daysPerWeek: number;
+}
+
 export interface Member {
   id: number;
   name: string;
@@ -38,7 +45,8 @@ export interface Member {
   registrations: Registration[];
   turns: number[]
   vouchers: Voucher[];
-  activitiesToNotify: number[]
+  activitiesToNotify: number[];
+  bodyBuildingSubscription?: BodyBuildingSubscription;
 }
 
 export interface UserLogin {
@@ -70,7 +78,7 @@ export interface Event {
   activityId?: number; 
 }
 
-export interface MachineAccessLog {
+export interface BodyBuildingEntryLog {
   id: number;
   memberId: number;
   accessTime: string; // ISO 8601 date

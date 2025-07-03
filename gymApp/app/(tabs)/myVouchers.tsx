@@ -36,9 +36,10 @@ export default function MyVouchers() {
   };
 
   const handleConfirmUseVoucher = () => {
-    setAlertVisible(false);
-    router.push({ pathname: Routes.Activities, params: { activityId: selectedVoucher?.activityId } });
-
+    if (selectedVoucher?.activityId) {
+      router.push(`${Routes.Activities}?activityId=${selectedVoucher.activityId}`);
+      setAlertVisible(false);
+    }
   };
 
   const formatDate = (date?: string | Date) => {

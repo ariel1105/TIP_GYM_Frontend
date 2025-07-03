@@ -1,59 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
 import moment from 'moment';
 import useColors from '@/theme/useColors';
 import { useAuth } from '@/context/AuthContext';
 import { Event } from '@/types/types';
+import Api from '@/services/Api';
+import { useFocusEffect } from 'expo-router';
+import AlertModal from '@/components/AlertModal';
 
-interface MachineAccessLog {
-  id: number;
-  memberId: number;
-  accessTime: string;
-}
-
-export default function MachineAccesses() {
+export default function BodyBuildingEntry() {
   const [events, setEvents] = useState<Event[]>([]);
   const { token } = useAuth();
   const colors = useColors();
   const [monthDate, setMonthDate] = useState(moment().startOf('month'));
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  useEffect(() => {
-    fetchMachineAccesses();
-  }, [monthDate]);
 
-  const fetchMachineAccesses = async () => {
+  useFocusEffect(
+    useCallback(() => {
+      fetchBodyBuildingEntry();
+    }, [monthDate])
+  );
+
+  const fetchBodyBuildingEntry = async () => {
     try {
-      // Accesos simulados para memberId 22 en el mes actual
-      const simulatedLogs: MachineAccessLog[] = [
-        {
-          id: 1,
-          memberId: 22,
-          accessTime: moment(monthDate).date(3).hour(9).minute(0).toISOString(),
-        },
-        {
-          id: 2,
-          memberId: 22,
-          accessTime: moment(monthDate).date(6).hour(18).minute(0).toISOString(),
-        },
-        {
-          id: 3,
-          memberId: 22,
-          accessTime: moment(monthDate).date(11).hour(12).minute(0).toISOString(),
-        },
-        {
-          id: 4,
-          memberId: 22,
-          accessTime: moment(monthDate).date(21).hour(7).minute(30).toISOString(),
-        },
-      ];
+      const response = await Api.getBodyBuildingEntries(monthDate.month() + 1, token!);
+      const records: string[] = response.data;
 
-      const mappedEvents: Event[] = simulatedLogs.map((log) => {
-        const start = new Date(log.accessTime);
-        start.setHours(start.getHours() + 3); // Ajuste zona horaria
-        const end = new Date(start.getTime() + 10 * 60 * 1000);
+      const mappedEvents: Event[] = records.map((accessTime, index) => {
+        const start = new Date(accessTime);
+        start.setHours(start.getHours() + 3);
+
+        const end = new Date(start.getTime() + 10 * 60 * 1000); 
         return {
-          id: log.id,
+          id: index,
           title: "Ingreso a máquinas",
           start,
           end,
@@ -65,6 +47,7 @@ export default function MachineAccesses() {
       Alert.alert("Error al obtener accesos", JSON.stringify(error.message));
     }
   };
+
 
   const styles = StyleSheet.create({
     container: {
@@ -150,32 +133,23 @@ export default function MachineAccesses() {
             moreLabel: colors.black,
           },
         }}
+        onPressEvent={(event) => {
+          setSelectedEvent(event);
+          setModalVisible(true);
+        }}
       />
+      <AlertModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        closeButton="Cerrar"
+        title="Registro de ingreso"
+        mensaje={
+          selectedEvent
+            ? `Fecha: ${moment(selectedEvent.start).format('DD/MM/YYYY')}\nHora: ${moment(selectedEvent.start).format('HH:mm')}`
+            : ''
+        }
+      />
+
     </View>
   );
 }
-
-
-//   const fetchMachineAccesses = async () => {
-//     try {
-//       const response = await Api.getMachineAccessLogs(token!);
-//       const logs: MachineAccessLog[] = response.data;
-
-//       const mappedEvents: Event[] = logs.map((log) => {
-//         const start = new Date(log.accessTime);
-//         start.setHours(start.getHours() + 3); // si hay que ajustar huso horario
-//         const end = new Date(start.getTime() + 10 * 60 * 1000); // evento de 10 minutos
-
-//         return {
-//           id: log.id,
-//           title: 'Ingreso a máquinas',
-//           start,
-//           end,
-//         };
-//       });
-
-//       setEvents(mappedEvents);
-//     } catch (error: any) {
-//       Alert.alert("Error al obtener accesos", JSON.stringify(error.message));
-//     }
-//   };

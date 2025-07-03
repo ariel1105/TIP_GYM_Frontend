@@ -52,7 +52,7 @@ export default function HomeScreen() {
 
             <TouchableOpacity
               style={[styles.button, { backgroundColor: colors.primary, shadowColor: colors.black }]}
-              onPress={() => router.push(Routes.Machines)}
+              onPress={() => router.push(Routes.BodyBuilding)}
             >
               <Icon name="dumbbell" size={40} color={colors.onPrimary} />
               <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Máquinas</Text>
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
     fontSize: 19,
     marginBottom: 20,
     textAlign: "center",
+    fontWeight:"500"
   },
   sectionContainer: {
     width: "100%",

@@ -1,6 +1,6 @@
 import { Suscriptions, Voucher } from '@/types/types';
 import Axios, { AxiosRequestConfig } from 'axios';
-export const API_BASE_URL = "http://192.168.1.49:8080/";
+export const API_BASE_URL = "http://192.168.1.45:8080/";
 
 const axiosInstance = Axios.create({
     baseURL: API_BASE_URL,
@@ -15,6 +15,18 @@ const post = (url: string, body?: any, header?: AxiosRequestConfig<any> | undefi
         
 const del = (url: string, header?: AxiosRequestConfig<any> | undefined) => 
     axiosInstance.delete(url, header)
+
+const login = async (body: { username: string; password: string }) => {
+    return post(`${API_BASE_URL}login`, body); 
+};
+
+const register = async (body: {
+    name: string
+    username: string;
+    password: string;
+}) => {
+    return post(`${API_BASE_URL}register`, body);
+};
 
 const getActivities = () => {
     return get(`${API_BASE_URL}activities`);
@@ -34,6 +46,12 @@ const getRegistrations = (token: string) => {
         headers: { "Authorization": `Bearer ${token}`} 
    });
 }
+
+const getBodyBuildingEntries = async (monthNumber: number, token: string) => {
+  return get(`${API_BASE_URL}member/bodyBuilding/entries?monthNumber=${monthNumber}`, {
+    headers: { "Authorization": `Bearer ${token}` },
+  });
+};
 
 const getMember = async (token: string) => {
     return get(`${API_BASE_URL}member`,  {
@@ -74,31 +92,28 @@ const subscribeToNotifications = async (activityId: number, token: string) => {
   });
 };
 
-const login = async (body: { username: string; password: string }) => {
-    return post(`${API_BASE_URL}login`, body); 
+const subscribeToBodyBuilding = async (daysPerWeek: number, token: string) => {
+  return post(`member/bodyBuilding/subscribe?daysPerWeek=${daysPerWeek}`, null, {
+    headers: { "Authorization": `Bearer ${token}` },
+  });
 };
 
-const register = async (body: {
-    name: string
-    username: string;
-    password: string;
-}) => {
-    return post(`${API_BASE_URL}register`, body);
-};
 
 const Api = {
+    login,
+    register,
     getActivities,
     getTurn,
     getWeekTurns,
     getRegistrations,
+    getBodyBuildingEntries,
     getMember,
     getVouchers,
     subscribe,
     unsubscribe,
     acquire,
     subscribeToNotifications,
-    login,
-    register
+    subscribeToBodyBuilding
 }
 
 export default Api;

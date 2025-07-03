@@ -52,11 +52,12 @@ export default function TabLayout() {
         <Tabs.Screen name="home" options={{ tabBarIcon: renderIcon('home') }} />
         <Tabs.Screen name="profile" options={{ tabBarIcon: renderIcon('profile') }} />
         <Tabs.Screen name="enrollments" options={{ href: null }} />
-        <Tabs.Screen name="machines" options={{ href: null }} />
+        <Tabs.Screen name="bodyBuilding" options={{ href: null }} />
         <Tabs.Screen name="activities" options={{ href: null }} />
         <Tabs.Screen name="vouchers" options={{ href: null }} />
         <Tabs.Screen name="myVouchers" options={{ href: null }} />
-        <Tabs.Screen name="myMachinePlan" options={{ href: null }} />
+        <Tabs.Screen name="myBodyBuildingPlan" options={{ href: null }} />
+        <Tabs.Screen name="myBodyBuildingEntry" options={{ href: null }} />
       </Tabs>
     </>
   );

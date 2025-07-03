@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import useColors from '@/theme/useColors';
 import { useEffect, useState } from 'react';
 import AlertModal from '@/components/AlertModal';
+import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function Profile() {
   const router = useRouter();
@@ -77,6 +78,48 @@ export default function Profile() {
       fontSize: 14,
       fontStyle: 'italic',
     },
+    grid: {
+      gap: 20,
+      width: "100%",
+      alignItems: "center",
+    },
+
+    row: {
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 20,
+    },
+
+    gridItem: {
+      width: 140,
+      height: 120,
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 10,
+    },
+
+    icon: {
+      fontSize: 32,
+      marginBottom: 6,
+    },
+
+    gridText: {
+      fontSize: 14,
+      fontWeight: "bold",
+      color: colors.black,
+      textAlign: "center",
+    },
+
+    logoutButton: {
+      marginTop: 30,
+      backgroundColor: colors.primary,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: 8,
+    },
+
   });
 
   return (
@@ -90,25 +133,37 @@ export default function Profile() {
         <Text style={styles.userName}>{memberName || "Cargando..."}</Text>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.Enrollments)}>
-        <Text style={styles.buttonText}>Mis inscripciones</Text>
-      </TouchableOpacity>
+      <View style={styles.grid}>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.gridItem} onPress={() => router.push(Routes.Enrollments)}>
+            <FontAwesome5Icon name="calendar-week" size={30} color={colors.black} style={styles.icon} />
+            <Text style={styles.gridText}>Inscripciones a actividades</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.MyVouchers)}>
-        <Text style={styles.buttonText}>Mis vouchers</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.gridItem} onPress={() => router.push(Routes.MyVouchers)}>
+            <FontAwesome5Icon name="ticket-alt" size={30} color={colors.black} style={styles.icon} />
+            <Text style={styles.gridText}>Vouchers</Text>
+          </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push(Routes.MyMachinePlan)}>
-        <Text style={styles.buttonText}>Mi plan maquinas</Text>
-      </TouchableOpacity>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.gridItem} onPress={() => router.push(Routes.MyBodyBuildingPlan)}>
+            <FontAwesome5Icon name="dumbbell" size={30} color={colors.black} style={styles.icon} />
+            <Text style={styles.gridText}>Plan musculación</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity style={styles.disabledButton} disabled>
-        <Text style={styles.disabledText}>Editar perfil (próximamente)</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.gridItem} onPress={() => router.push(Routes.MyBodyBuildingEntry)}>
+            <FontAwesome5Icon name="calendar" size={30} color={colors.black} style={styles.icon} />
+            <Text style={styles.gridText}>Mis ingresos a musculación</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={logout}>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.buttonText}>Cerrar sesión</Text>
       </TouchableOpacity>
+
 
       <AlertModal
         visible={showLoginModal}
