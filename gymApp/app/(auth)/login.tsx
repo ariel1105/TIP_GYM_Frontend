@@ -35,8 +35,8 @@ export default function Login() {
       backgroundColor: colors.background,
     },
     logo: {
-      width: 250,
-      height: 250,
+      width: 350,
+      height: 350,
       resizeMode: "contain",
       alignSelf: "center",
       marginBottom: 20,
@@ -78,7 +78,7 @@ export default function Login() {
   return (
     <View style={styles.container}>
        <Image
-        source={require("../../assets/images/LogoSyncSpaceDark.jpg")}
+        source={require("../../assets/images/SyncSpaceLogo.png")}
         style={styles.logo}
       />
       <TextInput

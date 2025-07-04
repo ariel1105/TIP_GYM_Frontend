@@ -11,10 +11,13 @@ import Api from "../../services/Api";
 import AlertModal from "../../components/AlertModal";
 import useColors from "../../theme/useColors";
 import { lightColors } from "../../theme/colors";
+import { router } from "expo-router";
+import { Routes } from "../constants/routes";
 
 export default function BodyBuilding() {
-  const { token } = useAuth();
+  const { token, member } = useAuth();
   const colors = useColors();
+
   const isLightMode = colors.background === lightColors.background;
 
   const [daysPerWeek, setDaysPerWeek] = useState(3);
@@ -22,8 +25,14 @@ export default function BodyBuilding() {
   const [successVisible, setSuccessVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
+
 
   const handleSubscribe = async () => {
+    if (!member || !token) {
+            setLoginModalVisible(true);
+            return;
+    }
     try {
       await Api.subscribeToBodyBuilding(daysPerWeek, token!!);
       setSuccessMessage(
@@ -50,6 +59,15 @@ export default function BodyBuilding() {
   const handleNext = () => {
     setDaysPerWeek((prev) => (prev === 7 ? 1 : prev + 1));
   };
+
+  const goToLogin = () => {
+      setLoginModalVisible(false)
+      router.push(Routes.Login)
+  }
+
+  const closeLoginModal = () => {
+      setLoginModalVisible(false)
+  }
 
   const styles = StyleSheet.create({
     background: {
@@ -155,6 +173,16 @@ export default function BodyBuilding() {
         mensaje={errorMessage}
         onClose={() => setErrorVisible(false)}
         closeButton="Aceptar"
+      />
+
+      <AlertModal
+        visible={loginModalVisible}
+        onClose={closeLoginModal}
+        closeButton="Cerrar"
+        title={"¡Atencion!"}
+        mensaje="Para esta acción necesitás estar logueado."
+        actionButton="Loguearme"
+        action={goToLogin}
       />
 
       <AlertModal
