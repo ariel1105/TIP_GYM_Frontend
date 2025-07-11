@@ -71,18 +71,18 @@ export default function VouchersScreen () {
                     activityName: activity?.name || "Nombre no encontrado",
                     remainingClasses: amount,
                     amount,
-                    price: 10.0,
+                    price: 1.0,
                 };
             });
         try {
-            const data = await handleIntegrationMP(vouchersArray)
-            if(!data) {
-                return console.log("ocurrio un error")
-            }
-            const response = openBrowserAsync(data)
-            setVouchersArray(vouchersArray); // <-- este es el que declaraste en AuthContext
+            // const data = await handleIntegrationMP(vouchersArray)
+            // if(!data) {
+            //     return console.log("ocurrio un error")
+            // }
+            // const response = openBrowserAsync(data)
+            setVouchersArray(vouchersArray);
 
-            console.log("response open browser async", response)
+            // console.log("response open browser async", response)
             await Api.acquire(vouchersArray, token!!);
             const updatedVouchers = [...(member.vouchers || []), ...vouchersArray];
             setMember({ ...member, vouchers: updatedVouchers });

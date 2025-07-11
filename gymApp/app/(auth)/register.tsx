@@ -4,6 +4,8 @@ import { View, TextInput, Text, Pressable, StyleSheet, TouchableOpacity } from "
 import { useRouter } from "expo-router";
 import useColors from "../../theme/useColors";
 import { Routes } from "../constants/routes";
+import { useTheme } from "../../theme/ThemeContext";
+import { Feather } from '@expo/vector-icons';
 
 export default function Register() {
   const { register } = useAuth();
@@ -13,6 +15,7 @@ export default function Register() {
   const router = useRouter();
   const colors = useColors();
   const [errors, setErrors] = useState<{ name?: string; username?: string; password?: string; general?: string }>({});
+  const { theme, toggleTheme } = useTheme();
 
   const handleRegister = async () => {
     const newErrors: typeof errors = {};
@@ -88,54 +91,73 @@ export default function Register() {
   });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Registro</Text>
-      <View>
-        <TextInput
-          placeholder="Nombre"
-          placeholderTextColor={colors.black}
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
-        />
-        {errors.name && <Text style={{ color: "red", marginBottom: 10 }}>{errors.name}</Text>}
+    <View style={{ flex: 1 }}>
+      <View style={{ 
+        height: 50,
+        alignItems: 'flex-end',
+        justifyContent: 'flex-end',
+        paddingRight: 15,
+        paddingBottom: 5,
+        backgroundColor: colors.background
+      }}>
+        <TouchableOpacity onPress={toggleTheme}>
+          <Feather
+            name={theme === 'dark' ? 'sun' : 'moon'}
+            size={24}
+            color={theme === 'dark' ? '#FFC107' : '#333'}
+          />
+        </TouchableOpacity>
       </View>
 
-      <View>
-        <TextInput
-          placeholder="Username"
-          placeholderTextColor={colors.black}
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-        />
-        {errors.username && <Text style={{ color: "red", marginBottom: 10 }}>{errors.username}</Text>}
+      <View style={styles.container}>
+        <Text style={styles.title}>Registro</Text>
+        <View>
+          <TextInput
+            placeholder="Nombre"
+            placeholderTextColor={colors.black}
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+          />
+          {errors.name && <Text style={{ color: "red", marginBottom: 10 }}>{errors.name}</Text>}
+        </View>
+
+        <View>
+          <TextInput
+            placeholder="Username"
+            placeholderTextColor={colors.black}
+            value={username}
+            onChangeText={setUsername}
+            style={styles.input}
+          />
+          {errors.username && <Text style={{ color: "red", marginBottom: 10 }}>{errors.username}</Text>}
+        </View>
+
+        <View>
+          <TextInput
+            placeholder="Contraseña"
+            placeholderTextColor={colors.black}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
+          {errors.password && <Text style={{ color: "red", marginBottom: 10 }}>{errors.password}</Text>}
+        </View>
+
+        {errors.general && <Text style={{ color: "red", marginBottom: 10 }}>{errors.general}</Text>}
+
+
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Registrarse</Text>
+        </TouchableOpacity>
+
+        <Pressable onPress={() => router.push(Routes.Login)}>
+          <Text style={styles.loginLink}>
+            ¿Ya tenés una cuenta? Iniciá sesión
+          </Text>
+        </Pressable>
       </View>
-
-      <View>
-        <TextInput
-          placeholder="Contraseña"
-          placeholderTextColor={colors.black}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-        />
-        {errors.password && <Text style={{ color: "red", marginBottom: 10 }}>{errors.password}</Text>}
-      </View>
-
-      {errors.general && <Text style={{ color: "red", marginBottom: 10 }}>{errors.general}</Text>}
-
-
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Registrarse</Text>
-      </TouchableOpacity>
-
-      <Pressable onPress={() => router.push(Routes.Login)}>
-        <Text style={styles.loginLink}>
-          ¿Ya tenés una cuenta? Iniciá sesión
-        </Text>
-      </Pressable>
     </View>
   );
 }

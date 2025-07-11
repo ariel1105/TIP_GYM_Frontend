@@ -4,6 +4,8 @@ import { View, TextInput, Text, Pressable, StyleSheet, TouchableOpacity, Image }
 import { useRouter } from "expo-router";
 import useColors from "../../theme/useColors";
 import { Routes } from "../constants/routes";
+import { useTheme } from "../../theme/ThemeContext";
+import { Feather } from '@expo/vector-icons';
 
 export default function Login() {
   const { login } = useAuth();
@@ -12,6 +14,7 @@ export default function Login() {
   const router = useRouter();
   const colors = useColors();
   const [error, setError] = useState("");
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -76,41 +79,61 @@ export default function Login() {
   });
 
   return (
-    <View style={styles.container}>
-       <Image
-        source={require("../../assets/images/SyncSpaceLogo.png")}
-        style={styles.logo}
-      />
-      <TextInput
-        placeholder="Username"
-        placeholderTextColor={colors.black}
-        value={username}
-        onChangeText={setUsername}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor={colors.black}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-      />
-      {error !== "" && <Text style={{ color: "red", marginBottom: 10 }}>{error}</Text>}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
+    <View style={{ flex: 1 }}>
+      <View style={{ 
+        height: 50,
+        alignItems: 'flex-end',
+        justifyContent: 'flex-end',
+        paddingRight: 15,
+        paddingBottom: 5,
+        backgroundColor: colors.background
+      }}>
+        <TouchableOpacity onPress={toggleTheme}>
+          <Feather
+            name={theme === 'dark' ? 'sun' : 'moon'}
+            size={24}
+            color={theme === 'dark' ? '#FFC107' : '#333'}
+          />
+        </TouchableOpacity>
+      </View>
 
-      <Pressable  onPress={() => router.push(Routes.Register)}>
-        <Text style={styles.registerLink}>
-          ¿No tenés una cuenta? Registrate acá
-        </Text>
-      </Pressable>
-      <Pressable  onPress={() => router.push(Routes.Home)}>
-        <Text style={styles.registerLink}>
-          Continuar sin una cuenta
-        </Text>
-      </Pressable>
+      <View style={styles.container}>
+       <Image
+          source={require("../../assets/images/SyncSpaceLogo.png")}
+          style={styles.logo}
+        />
+        <TextInput
+          placeholder="Username"
+          placeholderTextColor={colors.black}
+          value={username}
+          onChangeText={setUsername}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor={colors.black}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          style={styles.input}
+        />
+        {error !== "" && <Text style={{ color: "red", marginBottom: 10 }}>{error}</Text>}
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+
+        <Pressable  onPress={() => router.push(Routes.Register)}>
+          <Text style={styles.registerLink}>
+            ¿No tenés una cuenta? Registrate acá
+          </Text>
+        </Pressable>
+        <Pressable  onPress={() => router.push(Routes.Home)}>
+          <Text style={styles.registerLink}>
+            Continuar sin una cuenta
+          </Text>
+        </Pressable>
+      </View>
     </View>
+    
   );
 }

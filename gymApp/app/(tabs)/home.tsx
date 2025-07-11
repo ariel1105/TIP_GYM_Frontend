@@ -13,9 +13,8 @@ export default function HomeScreen() {
   const { member } = useAuth()
   const colors : AppColors = useColors()
 
-  if(member){
-    useTurnNotification(member?.activitiesToNotify ?? []);
-  }
+  const activitiesToNotify = member?.activitiesToNotify ?? [];
+  useTurnNotification(activitiesToNotify);
 
   return (
     <ImageBackground

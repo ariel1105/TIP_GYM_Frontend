@@ -223,11 +223,11 @@ export default function ActivitiesScreen() {
   const handleConfirmPress = async () => {
     if (!member || !token) {
       openModal(
-        "Iniciá sesión",
-        "Necesitás iniciar sesión para suscribirte.",
+        "Atención",
+        "Necesitás estar logueado para inscribirte.",
         goToLogin,
-        "Iniciar sesión",
-        "Cancelar"
+        "Loguearme",
+        "Cerrar"
       );
       return;
     }

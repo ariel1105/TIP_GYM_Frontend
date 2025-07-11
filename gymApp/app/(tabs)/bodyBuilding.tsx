@@ -15,7 +15,7 @@ import { router } from "expo-router";
 import { Routes } from "../constants/routes";
 
 export default function BodyBuilding() {
-  const { token, member } = useAuth();
+  const { token, member, setMember} = useAuth();
   const colors = useColors();
 
   const isLightMode = colors.background === lightColors.background;
@@ -34,7 +34,17 @@ export default function BodyBuilding() {
             return;
     }
     try {
-      await Api.subscribeToBodyBuilding(daysPerWeek, token!!);
+      const response = await Api.subscribeToBodyBuilding(daysPerWeek, token!!);
+      setMember({
+        ...member,
+        bodyBuildingSubscription: {
+          member: response.data.member, // o el ID/nombre si viene en el DTO
+          acquisitionDate: response.data.acquisitionDate,
+          dueDate: response.data.dueDate,
+          daysPerWeek: response.data.daysPerWeek,
+        },
+      });
+
       setSuccessMessage(
         `Te suscribiste a musculación ${
           daysPerWeek === 7 ? "sin límite de días" : `${daysPerWeek} días/semana`
